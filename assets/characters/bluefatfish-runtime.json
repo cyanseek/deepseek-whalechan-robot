@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "bundle_id": "bluefatfish-runtime-ar2",
+  "profile": "VD24",
+  "archive_name": "DeepSeek-Whalechan-Robot-Assets-AR2-VD24.zip",
+  "archive_bytes": 29536180,
+  "sha256": "48e39af0e991d0f849735ad15a25bcb92f2bb6b59ede5acaec1b5f740a03d41f",
+  "root": "BlueFatFish_Visual_Delivery",
+  "manifest_sha256": "47090676da0b35551f01d40c6005291167abe32d27c47c518e6a08f32ba8e34c",
+  "download_url": "https://github.com/cyanseek/deepseek-whalechan-robot/releases/download/vd24-ar2/DeepSeek-Whalechan-Robot-Assets-AR2-VD24.zip",
+  "publication_status": "github_release",
+  "description": "Matched VD24 runtime assets; AR1 visual/physics dependencies unchanged, public provenance and minimal runtime selection."
+}

@@ -1,0 +1,22 @@
+# DeepSeek Whale-chan Robot
+
+> Aliases: OpenDafeiyu, DeepSeek 鲸鱼娘具身机器人. DeepSeek 大肥鱼 / 鲸鱼娘 / Dafeiyu / Whale-chan embodied character simulation in MuJoCo. Current source demo: VD2.4, Windows, 23 actuators, contact-aware small steps, turning, low hops, whale-tail coordination, expressions and RGB marker approach.
+
+Source-run workflow; matching separately licensed character assets are installed by tools/install_character_assets.py from the AR2 runtime ZIP. The matching ZIP is distributed through the project GitHub Release. The installer downloads and verifies it automatically. No API key or LLM is needed for the demonstrated sequence. Code license: MIT; character/model/media terms are separate. Current capabilities are simulation. Planned next stages connect DeepSeek conversation and voice to high-level tasks, followed by physical companionship; those integrations are not yet available on this body.
+
+## Start
+
+- [简体中文](README.md): Product overview, media and setup.
+- [English](README.en.md): Complete English README.
+- [日本語](README.ja.md): Complete Japanese README.
+- [Agent guide](docs/AGENT_GUIDE.md): Preflight, bounded native check, recording commands and output interpretation.
+- [Machine-readable project information](project-info.json): Current capabilities, assets and CLI arguments.
+
+## Develop
+
+- [Assets](docs/ASSETS.md): Matching delivery structure and permission boundaries.
+- [Current body and control](docs/CHARACTER.md): Dynamic body, controller stages and code map.
+- [Demonstration](docs/DEMO.md): Real footage, measured scope and reproducibility.
+- [Roadmap](docs/ROADMAP.md): Planned interaction, motion learning, behavior extensions and physical validation; distinct from current capabilities.
+- [Contributing](CONTRIBUTING.md): Reproducible behavior changes and validation.
+- [Code license](LICENSE): MIT terms for project-authored code.

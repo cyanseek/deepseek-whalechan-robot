@@ -1,0 +1,137 @@
+{
+  "profile": "VD24",
+  "run_id": "20261021-VD24-final03",
+  "date": "2026-10-21",
+  "evidence_type": "native_physics_simulation",
+  "control_mode": "prescribed_high_level_sequence_with_contact_aware_IK_PD",
+  "simulated_seconds": 39.0,
+  "wall_seconds": 39.16998140000214,
+  "video_fps": 60,
+  "playback_speed": 1,
+  "publication_status": "public_release",
+  "media_license": "Separate character asset terms; no blanket MIT grant",
+  "items": [
+    {
+      "file": "demo.mp4",
+      "bytes": 13872923,
+      "sha256": "03fc13588bc53ebf726c7ad326f7ac20743048f642dc89f4e3664381baa36c7e",
+      "operation": "byte-identical full recording"
+    },
+    {
+      "file": "demo-web.mp4",
+      "bytes": 2369684,
+      "sha256": "81d13aff3cd0228752f51059cba141187b4a6b0f3ee146fbc95253b3ef4957b7",
+      "operation": "H.264 recompression; same frames, duration and 1x speed"
+    },
+    {
+      "file": "walk.gif",
+      "bytes": 2229052,
+      "sha256": "60960aecac07c67f3fe8539c8c28c1d4709aae963f6329c0a78296cb4bf3e399",
+      "operation": "seconds 6-12; 512 px / 10fps / 96 colors; looping at 1x speed"
+    },
+    {
+      "file": "hello.png",
+      "bytes": 362698,
+      "sha256": "d8c98bb402da0208ff017f274eab3d9b1851a2729fd442141f1c68507667132a",
+      "operation": "existing frame at 2 s; byte-identical copy"
+    },
+    {
+      "file": "tail.png",
+      "bytes": 361182,
+      "sha256": "a8b6bb720bb49c3c7277be371b887a7ec335560b172ef9a9c1417fe9c8f5abae",
+      "operation": "existing frame at 26 s; byte-identical copy"
+    },
+    {
+      "file": "smile.png",
+      "bytes": 390710,
+      "sha256": "38d772c9dc863a48370df7ed7aee326a8d9aa6e360a824f482f97f26e14bcfa8",
+      "operation": "existing frame at 35 s; byte-identical copy"
+    },
+    {
+      "file": "wave.gif",
+      "bytes": 769323,
+      "sha256": "53c3520feeab7f7d7368e9baaa5a8b926390fdf8f71e03a411c89561ce63d45e",
+      "source_run_id": "20261021-VD24-final03",
+      "source_video_sha256": "03fc13588bc53ebf726c7ad326f7ac20743048f642dc89f4e3664381baa36c7e",
+      "start_seconds": 2.5,
+      "duration_seconds": 3.5,
+      "fps": 10,
+      "playback_speed": 1,
+      "crop_xywh": [
+        340,
+        80,
+        560,
+        560
+      ],
+      "operation": "contiguous crop; 384px, 10fps, 96 colors; original speed, no retiming"
+    },
+    {
+      "file": "expressions.gif",
+      "bytes": 1812064,
+      "sha256": "a220f7c08612df4d9ae630f21bee4b717973e896740dd6b2ce09d99c391cfc2a",
+      "source_run_id": "public-expressions-02",
+      "source_video_sha256": "c85416e1d7bb740dbe3507ec240e1f0b733ed1f9d45c25e41b24974be4484fcf",
+      "start_seconds": 1.5,
+      "duration_seconds": 6.0,
+      "fps": 10,
+      "playback_speed": 1,
+      "crop_xywh": [
+        450,
+        100,
+        380,
+        380
+      ],
+      "operation": "contiguous crop; 384px, 10fps, 96 colors; original speed, no retiming"
+    },
+    {
+      "file": "tail.gif",
+      "bytes": 849982,
+      "sha256": "7dc14f9f75b9de5acdbedf5b57909c18faaade0da6109f8274753721a7673f68",
+      "source_run_id": "public-tail-02",
+      "source_video_sha256": "d39ae04d1a4c9c4393fce7257abf028d345268613e6922618d1dcf51d894f528",
+      "start_seconds": 3.0,
+      "duration_seconds": 5.0,
+      "fps": 10,
+      "playback_speed": 1,
+      "crop_xywh": [
+        340,
+        100,
+        600,
+        600
+      ],
+      "operation": "contiguous crop; 384px, 10fps, 96 colors; original speed, no retiming"
+    },
+    {
+      "file": "walk-detail.gif",
+      "bytes": 2999449,
+      "sha256": "6156162b52c36b378414e5a2de3b3ddf6214dfc17704bf1677bcb1df1d0f74ea",
+      "source_run_id": "20261021-VD24-final03",
+      "source_video_sha256": "03fc13588bc53ebf726c7ad326f7ac20743048f642dc89f4e3664381baa36c7e",
+      "start_seconds": 6.0,
+      "duration_seconds": 6.0,
+      "fps": 10,
+      "playback_speed": 1,
+      "crop_xywh": [
+        340,
+        80,
+        600,
+        600
+      ],
+      "operation": "contiguous crop; 384px, 10fps, 96 colors; original speed, no retiming"
+    },
+    {
+      "file": "expressions.mp4",
+      "bytes": 2319272,
+      "sha256": "c85416e1d7bb740dbe3507ec240e1f0b733ed1f9d45c25e41b24974be4484fcf",
+      "source_run_id": "public-expressions-02",
+      "operation": "byte-identical full native scenario recording; 30fps at original speed"
+    },
+    {
+      "file": "tail.mp4",
+      "bytes": 1298616,
+      "sha256": "d39ae04d1a4c9c4393fce7257abf028d345268613e6922618d1dcf51d894f528",
+      "source_run_id": "public-tail-02",
+      "operation": "byte-identical full native scenario recording; 30fps at original speed"
+    }
+  ]
+}

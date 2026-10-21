@@ -1,0 +1,346 @@
+{
+  "date": "2026-10-21",
+  "environment": "Windows / Python 3.13.5 / MuJoCo 3.3.7 / fresh virtual environment",
+  "tests": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0
+  },
+  "scope": "Public runtime source and AR2 assets; native simulation, not hardware. Original hero recording is preserved separately.",
+  "runs": [
+    {
+      "run_id": "public-stand",
+      "scenario": "stand",
+      "profile": "VD24",
+      "command": "python tools/run_bluefatfish_v2.py --profile VD24 --scenario stand --seconds 2 --out runs/public-stand",
+      "engine": "3.3.7",
+      "python": "3.13.5",
+      "sim_s": 1.9999999999998905,
+      "wall_s": 0.48020849999738857,
+      "nu": 23,
+      "character_mocap": 0,
+      "root_writes_after_initialization": 0,
+      "controller_state_write_checks": 200,
+      "max_tilt_rad": 0.021202292227867462,
+      "final_phase": "lower",
+      "steps_completed": 0,
+      "failure": null,
+      "source_hashes": {
+        "src/opendafeiyu/bluefatfish.py": "ac7c1c89beb21433e4b78991436349d78e760aa3f2ba376a30b4ee3a4e264adc",
+        "src/opendafeiyu/bluefatfish_v2.py": "853508514676e4d23d3426a95abe1feac7e0633cc72af782a2ad9e3116b02bd7",
+        "src/opendafeiyu/bluefatfish_expressions.py": "0e0a1c110aefd1076349d70c477f52d5fdca5008039abc74d441628efffd36a0",
+        "src/opendafeiyu/tasks.py": "0f2784cdf52b9265484b0122c6cdce2c92abacc6ac0b3c6c7ef507c630c7b0f0",
+        "tools/run_bluefatfish_v2.py": "9a47fe6ed73b8f3354f8ad82f1568b1cebff4751908960d74f098c9b3da36b3b",
+        "src/opendafeiyu/bluefatfish_v21.py": "f7e0cf1f839667fdad3afc1df7f08cbd87ed6b05fc2b7cdc28e46df7e8cd301f",
+        "src/opendafeiyu/bluefatfish_v22.py": "7bfd1d7d2da1041dc90ed92a712da1cc17ca13d3f0bed7056ef5cde89d597e6d",
+        "src/opendafeiyu/bluefatfish_v23.py": "f8f3dc3f536b34c1aad5c584d41271543bfb6b38b52b58f1ea88f7defa96bc56",
+        "assets/characters/bluefatfish-v23/clothing.json": "ba651ee432f2f616580b9e35827c2286b74a14ec18b6ef04d481b8661b348eb8",
+        "src/opendafeiyu/bluefatfish_v24.py": "fe646b48dac380a20d073820114615430a0877f9c259225f993ae8678a1f594b",
+        "assets/characters/bluefatfish-v24/clothing.json": "4221d3910054cb61db896743c6834b6f8294cf7f9e59683c6dd07ca5d61cd035"
+      },
+      "tail": {
+        "tail_yaw": {
+          "min_rad": -2.2204460492503133e-21,
+          "max_rad": 0.010727448681222145,
+          "final_rad": 0.006344359572241026,
+          "max_torque_Nm": 0.0027701879636884623
+        },
+        "tail_pitch": {
+          "min_rad": -0.05027664733498124,
+          "max_rad": 0.005177535060703263,
+          "final_rad": 0.005254743637337791,
+          "max_torque_Nm": 0.04510700442805391
+        },
+        "tail_bend": {
+          "min_rad": -0.024558687860047012,
+          "max_rad": 9.379164112033323e-19,
+          "final_rad": -0.014274403846215542,
+          "max_torque_Nm": 0.019267158637069345
+        },
+        "completed": false,
+        "cancelled": false,
+        "stable_final_second": false
+      },
+      "jump": {
+        "requested": false,
+        "takeoff": false,
+        "recovered": false,
+        "accepted": false,
+        "stable_final_second": false,
+        "total_airborne_s": 0.0,
+        "longest_airborne_s": 0.0,
+        "air_intervals": [],
+        "launch_longest_airborne_s": 0.0,
+        "launch_peak_both_soles_clearance_m": 0.0,
+        "interval_definition": "No floor contact at 1 kHz, classified by controller phase at interval start; recovery intervals are not accepted as launch flight in VD22/VD23.",
+        "peak_com_rise_m": 0.0,
+        "peak_both_soles_clearance_m": 0.0
+      }
+    },
+    {
+      "run_id": "public-expressions-02",
+      "scenario": "expressions",
+      "profile": "VD24",
+      "command": "python tools/run_bluefatfish_v2.py --profile VD24 --scenario expressions --seconds 13 --out runs/public-expressions-02 --video --fps 30 --presentation",
+      "engine": "3.3.7",
+      "python": "3.13.5",
+      "sim_s": 12.999999999998234,
+      "wall_s": 6.651915099995676,
+      "nu": 23,
+      "character_mocap": 0,
+      "root_writes_after_initialization": 0,
+      "controller_state_write_checks": 1300,
+      "max_tilt_rad": 0.021202292227867462,
+      "final_phase": "ready",
+      "steps_completed": 0,
+      "failure": null,
+      "source_hashes": {
+        "src/opendafeiyu/bluefatfish.py": "ac7c1c89beb21433e4b78991436349d78e760aa3f2ba376a30b4ee3a4e264adc",
+        "src/opendafeiyu/bluefatfish_v2.py": "853508514676e4d23d3426a95abe1feac7e0633cc72af782a2ad9e3116b02bd7",
+        "src/opendafeiyu/bluefatfish_expressions.py": "0e0a1c110aefd1076349d70c477f52d5fdca5008039abc74d441628efffd36a0",
+        "src/opendafeiyu/tasks.py": "0f2784cdf52b9265484b0122c6cdce2c92abacc6ac0b3c6c7ef507c630c7b0f0",
+        "tools/run_bluefatfish_v2.py": "9a47fe6ed73b8f3354f8ad82f1568b1cebff4751908960d74f098c9b3da36b3b",
+        "src/opendafeiyu/bluefatfish_v21.py": "f7e0cf1f839667fdad3afc1df7f08cbd87ed6b05fc2b7cdc28e46df7e8cd301f",
+        "src/opendafeiyu/bluefatfish_v22.py": "7bfd1d7d2da1041dc90ed92a712da1cc17ca13d3f0bed7056ef5cde89d597e6d",
+        "src/opendafeiyu/bluefatfish_v23.py": "f8f3dc3f536b34c1aad5c584d41271543bfb6b38b52b58f1ea88f7defa96bc56",
+        "assets/characters/bluefatfish-v23/clothing.json": "ba651ee432f2f616580b9e35827c2286b74a14ec18b6ef04d481b8661b348eb8",
+        "src/opendafeiyu/bluefatfish_v24.py": "f5e4714f22cea9a9a55f39da7d39dcfa1fe6717f480694485b481a88628e8ad9",
+        "assets/characters/bluefatfish-v24/clothing.json": "4221d3910054cb61db896743c6834b6f8294cf7f9e59683c6dd07ca5d61cd035"
+      },
+      "tail": {
+        "tail_yaw": {
+          "min_rad": -0.01300143578804077,
+          "max_rad": 0.012501363888920793,
+          "final_rad": 0.0037327150087751414,
+          "max_torque_Nm": 0.006331900452765947
+        },
+        "tail_pitch": {
+          "min_rad": -0.05027664733498124,
+          "max_rad": 0.006580296284414176,
+          "final_rad": 0.005557072969295534,
+          "max_torque_Nm": 0.04510700442805391
+        },
+        "tail_bend": {
+          "min_rad": -0.03369968481970372,
+          "max_rad": 9.379164112033323e-19,
+          "final_rad": -0.026832428731980086,
+          "max_torque_Nm": 0.019267158637069345
+        },
+        "completed": false,
+        "cancelled": false,
+        "stable_final_second": true
+      },
+      "jump": {
+        "requested": false,
+        "takeoff": false,
+        "recovered": false,
+        "accepted": false,
+        "stable_final_second": true,
+        "total_airborne_s": 0.0,
+        "longest_airborne_s": 0.0,
+        "air_intervals": [],
+        "launch_longest_airborne_s": 0.0,
+        "launch_peak_both_soles_clearance_m": 0.0,
+        "interval_definition": "No floor contact at 1 kHz, classified by controller phase at interval start; recovery intervals are not accepted as launch flight in VD22/VD23.",
+        "peak_com_rise_m": 0.0,
+        "peak_both_soles_clearance_m": 0.0
+      }
+    },
+    {
+      "run_id": "public-tail-02",
+      "scenario": "tail",
+      "profile": "VD24",
+      "command": "python tools/run_bluefatfish_v2.py --profile VD24 --scenario tail --seconds 10 --out runs/public-tail-02 --video --fps 30",
+      "engine": "3.3.7",
+      "python": "3.13.5",
+      "sim_s": 9.999999999999897,
+      "wall_s": 4.5839386000006925,
+      "nu": 23,
+      "character_mocap": 0,
+      "root_writes_after_initialization": 0,
+      "controller_state_write_checks": 1000,
+      "max_tilt_rad": 0.021202292227867462,
+      "final_phase": "ready",
+      "steps_completed": 0,
+      "failure": null,
+      "source_hashes": {
+        "src/opendafeiyu/bluefatfish.py": "ac7c1c89beb21433e4b78991436349d78e760aa3f2ba376a30b4ee3a4e264adc",
+        "src/opendafeiyu/bluefatfish_v2.py": "853508514676e4d23d3426a95abe1feac7e0633cc72af782a2ad9e3116b02bd7",
+        "src/opendafeiyu/bluefatfish_expressions.py": "0e0a1c110aefd1076349d70c477f52d5fdca5008039abc74d441628efffd36a0",
+        "src/opendafeiyu/tasks.py": "0f2784cdf52b9265484b0122c6cdce2c92abacc6ac0b3c6c7ef507c630c7b0f0",
+        "tools/run_bluefatfish_v2.py": "9a47fe6ed73b8f3354f8ad82f1568b1cebff4751908960d74f098c9b3da36b3b",
+        "src/opendafeiyu/bluefatfish_v21.py": "f7e0cf1f839667fdad3afc1df7f08cbd87ed6b05fc2b7cdc28e46df7e8cd301f",
+        "src/opendafeiyu/bluefatfish_v22.py": "7bfd1d7d2da1041dc90ed92a712da1cc17ca13d3f0bed7056ef5cde89d597e6d",
+        "src/opendafeiyu/bluefatfish_v23.py": "f8f3dc3f536b34c1aad5c584d41271543bfb6b38b52b58f1ea88f7defa96bc56",
+        "assets/characters/bluefatfish-v23/clothing.json": "ba651ee432f2f616580b9e35827c2286b74a14ec18b6ef04d481b8661b348eb8",
+        "src/opendafeiyu/bluefatfish_v24.py": "f5e4714f22cea9a9a55f39da7d39dcfa1fe6717f480694485b481a88628e8ad9",
+        "assets/characters/bluefatfish-v24/clothing.json": "4221d3910054cb61db896743c6834b6f8294cf7f9e59683c6dd07ca5d61cd035"
+      },
+      "tail": {
+        "tail_yaw": {
+          "min_rad": -0.1391695817837145,
+          "max_rad": 0.13944565815411927,
+          "final_rad": 0.009015507737539067,
+          "max_torque_Nm": 0.019529647447321552
+        },
+        "tail_pitch": {
+          "min_rad": -0.05027664733498124,
+          "max_rad": 0.13743248911620798,
+          "final_rad": 0.006024367332872714,
+          "max_torque_Nm": 0.04510700442805391
+        },
+        "tail_bend": {
+          "min_rad": -0.08885265901703539,
+          "max_rad": 0.042487837999921264,
+          "final_rad": -0.013624235075373886,
+          "max_torque_Nm": 0.02283738706893075
+        },
+        "completed": true,
+        "cancelled": false,
+        "stable_final_second": true,
+        "accepted": true
+      },
+      "jump": {
+        "requested": false,
+        "takeoff": false,
+        "recovered": false,
+        "accepted": false,
+        "stable_final_second": true,
+        "total_airborne_s": 0.0,
+        "longest_airborne_s": 0.0,
+        "air_intervals": [],
+        "launch_longest_airborne_s": 0.0,
+        "launch_peak_both_soles_clearance_m": 0.0,
+        "interval_definition": "No floor contact at 1 kHz, classified by controller phase at interval start; recovery intervals are not accepted as launch flight in VD22/VD23.",
+        "peak_com_rise_m": 0.0,
+        "peak_both_soles_clearance_m": 0.0
+      }
+    },
+    {
+      "run_id": "public-coordinated-02",
+      "scenario": "coordinated",
+      "profile": "VD24",
+      "command": "python tools/run_bluefatfish_v2.py --profile VD24 --scenario coordinated --seconds 39 --out runs/public-coordinated-02 --video --fps 60 --presentation",
+      "engine": "3.3.7",
+      "python": "3.13.5",
+      "sim_s": 38.99999999999981,
+      "wall_s": 33.44311970000854,
+      "nu": 23,
+      "character_mocap": 0,
+      "root_writes_after_initialization": 0,
+      "controller_state_write_checks": 3900,
+      "max_tilt_rad": 0.15953113367664928,
+      "final_phase": "ready",
+      "steps_completed": 22,
+      "failure": null,
+      "source_hashes": {
+        "src/opendafeiyu/bluefatfish.py": "ac7c1c89beb21433e4b78991436349d78e760aa3f2ba376a30b4ee3a4e264adc",
+        "src/opendafeiyu/bluefatfish_v2.py": "853508514676e4d23d3426a95abe1feac7e0633cc72af782a2ad9e3116b02bd7",
+        "src/opendafeiyu/bluefatfish_expressions.py": "0e0a1c110aefd1076349d70c477f52d5fdca5008039abc74d441628efffd36a0",
+        "src/opendafeiyu/tasks.py": "0f2784cdf52b9265484b0122c6cdce2c92abacc6ac0b3c6c7ef507c630c7b0f0",
+        "tools/run_bluefatfish_v2.py": "9a47fe6ed73b8f3354f8ad82f1568b1cebff4751908960d74f098c9b3da36b3b",
+        "src/opendafeiyu/bluefatfish_v21.py": "f7e0cf1f839667fdad3afc1df7f08cbd87ed6b05fc2b7cdc28e46df7e8cd301f",
+        "src/opendafeiyu/bluefatfish_v22.py": "7bfd1d7d2da1041dc90ed92a712da1cc17ca13d3f0bed7056ef5cde89d597e6d",
+        "src/opendafeiyu/bluefatfish_v23.py": "f8f3dc3f536b34c1aad5c584d41271543bfb6b38b52b58f1ea88f7defa96bc56",
+        "assets/characters/bluefatfish-v23/clothing.json": "ba651ee432f2f616580b9e35827c2286b74a14ec18b6ef04d481b8661b348eb8",
+        "src/opendafeiyu/bluefatfish_v24.py": "f5e4714f22cea9a9a55f39da7d39dcfa1fe6717f480694485b481a88628e8ad9",
+        "assets/characters/bluefatfish-v24/clothing.json": "4221d3910054cb61db896743c6834b6f8294cf7f9e59683c6dd07ca5d61cd035"
+      },
+      "tail": {
+        "tail_yaw": {
+          "min_rad": -0.13914022209414822,
+          "max_rad": 0.139578308814272,
+          "final_rad": 0.01177577253972107,
+          "max_torque_Nm": 0.037782670838614876
+        },
+        "tail_pitch": {
+          "min_rad": -0.05027664733498124,
+          "max_rad": 0.13710355891605522,
+          "final_rad": 0.005701921810718344,
+          "max_torque_Nm": 0.07309740651545625
+        },
+        "tail_bend": {
+          "min_rad": -0.088699946441176,
+          "max_rad": 0.042709146178093495,
+          "final_rad": -0.014505288029211359,
+          "max_torque_Nm": 0.03336867444539973
+        },
+        "completed": true,
+        "cancelled": false,
+        "stable_final_second": true
+      },
+      "jump": {
+        "requested": true,
+        "takeoff": true,
+        "recovered": true,
+        "accepted": true,
+        "stable_final_second": true,
+        "total_airborne_s": 0.09200000000000007,
+        "longest_airborne_s": 0.05700000000006844,
+        "air_intervals": [
+          {
+            "start_s": 20.272000000001793,
+            "end_s": 20.273000000001794,
+            "duration_s": 0.0010000000000012221,
+            "start_phase": "launch",
+            "peak_both_soles_clearance_m": 4.3463407225705075e-06
+          },
+          {
+            "start_s": 20.28600000000181,
+            "end_s": 20.290000000001815,
+            "duration_s": 0.0040000000000048885,
+            "start_phase": "launch",
+            "peak_both_soles_clearance_m": 8.85504379683523e-05
+          },
+          {
+            "start_s": 20.301000000001828,
+            "end_s": 20.30300000000183,
+            "duration_s": 0.0020000000000024443,
+            "start_phase": "launch",
+            "peak_both_soles_clearance_m": 8.128198035969175e-06
+          },
+          {
+            "start_s": 20.31100000000184,
+            "end_s": 20.321000000001852,
+            "duration_s": 0.010000000000012221,
+            "start_phase": "launch",
+            "peak_both_soles_clearance_m": 0.0008088025780149458
+          },
+          {
+            "start_s": 20.340000000001876,
+            "end_s": 20.397000000001945,
+            "duration_s": 0.05700000000006966,
+            "start_phase": "flight",
+            "peak_both_soles_clearance_m": 0.006675235260982142
+          },
+          {
+            "start_s": 20.463000000002026,
+            "end_s": 20.464000000002027,
+            "duration_s": 0.0010000000000012221,
+            "start_phase": "recover",
+            "peak_both_soles_clearance_m": 1.0653341300497637e-06
+          },
+          {
+            "start_s": 20.709000000002327,
+            "end_s": 20.718000000002338,
+            "duration_s": 0.009000000000011,
+            "start_phase": "recover",
+            "peak_both_soles_clearance_m": 7.283142536637643e-05
+          },
+          {
+            "start_s": 20.76000000000239,
+            "end_s": 20.7680000000024,
+            "duration_s": 0.008000000000009777,
+            "start_phase": "recover",
+            "peak_both_soles_clearance_m": 7.851982750071464e-05
+          }
+        ],
+        "launch_longest_airborne_s": 0.05700000000006966,
+        "launch_peak_both_soles_clearance_m": 0.006675235260982142,
+        "interval_definition": "No floor contact at 1 kHz, classified by controller phase at interval start; recovery intervals are not accepted as launch flight in VD22/VD23.",
+        "peak_com_rise_m": 0.009176010735066673,
+        "peak_both_soles_clearance_m": 0.006675235260982142
+      }
+    }
+  ]
+}

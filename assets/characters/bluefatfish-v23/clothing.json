@@ -1,0 +1,10 @@
+{
+  "design": "White opaque bloomer shorts with scalloped cuffs",
+  "coordinates": "Original source bind frame, metres; x left, y back, z up",
+  "waist_center": [0.0, 0.0, 0.078],
+  "waist_size": [0.052, 0.032, 0.023],
+  "leg_center": [0.035, -0.002, 0.063],
+  "leg_size": [0.027, 0.028, 0.026],
+  "coverage": "Opaque closed waist and both upper-leg volumes, overlapping at crotch; no sheer surfaces",
+  "mass_note": "Visual garment represented within existing character mass and collision envelope; dynamics unchanged"
+}

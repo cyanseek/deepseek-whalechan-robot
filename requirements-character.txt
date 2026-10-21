@@ -1,0 +1,9 @@
+# VD24 character demo: direct dependencies verified on Windows / Python 3.13.5.
+# No language model, training framework or API key is required for this demo.
+numpy==2.3.5
+mujoco==3.3.7
+opencv-python==5.0.0.93
+Pillow==12.3.0
+imageio==2.38.1
+imageio-ffmpeg==0.6.0
+scipy==1.18.1

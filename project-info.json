@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "name": "DeepSeek Whale-chan Robot",
+  "name_zh": "DeepSeek 鲸鱼娘具身机器人（大肥鱼）",
+  "repository_url": "https://github.com/cyanseek/deepseek-whalechan-robot",
+  "distribution": "source and matching runtime asset release",
+  "aliases": [
+    "DeepSeek 鲸鱼娘",
+    "DeepSeek 大肥鱼",
+    "DeepSeek Whale-chan",
+    "whale girl",
+    "DeepSeek-chan",
+    "OpenDafeiyu",
+    "dafeiyu"
+  ],
+  "summary": "DeepSeek Whale-chan embodied character in MuJoCo: bipedal small steps, coordinated whale tail, expressions and RGB marker approach.",
+  "profile": "VD24",
+  "visual_control_version": "VD2.4",
+  "default_readme": "README.md",
+  "languages": {
+    "zh-CN": "README.md",
+    "en": "README.en.md",
+    "ja": "README.ja.md"
+  },
+  "verified_environment": {
+    "os": "Windows",
+    "python": "3.13.5",
+    "mujoco": "3.3.7",
+    "physics": "CPU",
+    "graphics": "OpenGL"
+  },
+  "code_license": "MIT",
+  "asset_license": "separate restrictive source terms retained",
+  "required_asset_bundle": "BlueFatFish_Visual_Delivery",
+  "public_asset_bundle_available": true,
+  "api_key_required": false,
+  "llm_required_for_demo": false,
+  "capabilities": [
+    "native free-base MuJoCo dynamics",
+    "23 bounded actuators",
+    "contact-aware small steps and turning",
+    "low hops and landing recovery",
+    "3-axis whale-tail coordination",
+    "runtime expression blending",
+    "RGB color-marker approach with precision gait",
+    "task cancellation",
+    "recorded run evidence"
+  ],
+  "future_work": [
+    "velocity tracking, disturbance recovery and landing evaluation on the current body",
+    "DeepSeek conversation and voice with interruptible, observable task feedback on VD24",
+    "reproducible behavior examples and a stable extension interface for developers and agents",
+    "learned locomotion policies with matching body, actuator and observation/action contracts",
+    "prominent jumps",
+    "physical companion hardware, actuator identification and sim-to-real validation",
+    "greetings, following, desk-side interaction and focus/break reminders"
+  ],
+  "documents": {
+    "agent_guide": "docs/AGENT_GUIDE.md",
+    "assets": "docs/ASSETS.md",
+    "demo": "docs/DEMO.md",
+    "architecture": "docs/CHARACTER.md",
+    "roadmap": "docs/ROADMAP.md"
+  },
+  "commands": {
+    "preflight": [
+      "tools/character_preflight.py",
+      "--delivery",
+      "assets/local/BlueFatFish_Visual_Delivery"
+    ],
+    "smoke": [
+      "tools/run_bluefatfish_v2.py",
+      "--profile",
+      "VD24",
+      "--delivery",
+      "assets/local/BlueFatFish_Visual_Delivery",
+      "--scenario",
+      "stand",
+      "--seconds",
+      "2",
+      "--out",
+      "runs/agent-stand-01"
+    ],
+    "demo": [
+      "tools/run_bluefatfish_v2.py",
+      "--profile",
+      "VD24",
+      "--delivery",
+      "assets/local/BlueFatFish_Visual_Delivery",
+      "--scenario",
+      "coordinated",
+      "--seconds",
+      "39",
+      "--video",
+      "--fps",
+      "60",
+      "--presentation",
+      "--realtime",
+      "--out",
+      "runs/agent-demo-01"
+    ],
+    "install_assets": [
+      "tools/install_character_assets.py"
+    ]
+  },
+  "command_runtime": ".venv-sim/Scripts/python.exe",
+  "outputs_require_new_directory": true,
+  "preflight_exit_codes": {
+    "0": "ready_for_native_check",
+    "2": "action_required"
+  },
+  "preflight_checks_physics": false,
+  "demo_result": "run.json",
+  "demo_video": "simulation.mp4",
+  "demo_media_manifest": "docs/media/vd24/manifest.json",
+  "vision": "A DeepSeek-powered embodied companion: conversation, observable actions and expressive interaction, progressing from MuJoCo to physical hardware.",
+  "asset_bundle_descriptor": "assets/characters/bluefatfish-runtime.json",
+  "asset_package_prepared": true,
+  "references": [
+    {
+      "url": "https://github.com/pollen-robotics/microduck",
+      "role": "primary product/runtime reference; not integrated"
+    },
+    {
+      "url": "https://github.com/pollen-robotics/microduck_rl",
+      "role": "primary training/sim-to-real reference; policies not compatible with VD24"
+    },
+    {
+      "url": "https://github.com/apirrone/Open_Duck_Mini",
+      "role": "mechanical and historical engineering reference"
+    }
+  ],
+  "release_url": "https://github.com/cyanseek/deepseek-whalechan-robot/releases/tag/vd24-ar2",
+  "demo_url": "https://cyanseek.github.io/deepseek-whalechan-robot/watch.html",
+  "repository_name": "deepseek-whalechan-robot"
+}

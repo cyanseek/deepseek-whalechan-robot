@@ -1,0 +1,11 @@
+{
+  "design": "Compact opaque white bloomers, blended pelvis/thigh skinning",
+  "coordinates": "Source bind frame in metres; x left, y back, z up",
+  "waist_center": [0, 0, 0.079],
+  "waist_size": [0.043, 0.024, 0.017],
+  "leg_center": [0.030, -0.001, 0.066],
+  "leg_size": [0.022, 0.022, 0.021],
+  "hem_size": [0.0225, 0.0225, 0.002],
+  "coverage": "Closed opaque volumes. Compact hem above skirt edge; smooth hips/thigh blend instead of rigid independent cuffs.",
+  "physics": "Visual skin, no new mass/collision, no simulated fabric"
+}
