@@ -6,6 +6,8 @@ AI コンパニオンと人・ロボットのインタラクションを目指�
 
 継続的に更新中 · 現在は MuJoCo シミュレーション段階です。
 
+開発ブランチには、任意で試せる [DeepSeek テキスト対話（VD25）](docs/INTERACTION.md)と[歩行計測・中断可能な小跳躍（VD26）](docs/EMBODIMENT.md)があります。以下のデモと標準起動方法は公開済みの VD24 に対応しており、開発機能はまだ Release に含まれていません。
+
 [简体中文](README.md) · [English](README.en.md) · **日本語**
 
 [デモを見る](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [クイックスタート](#クイックスタート) · [ロードマップ](#ロードマップ) · [Agent 向け](#agent-向け) · [開発ガイド](docs/CHARACTER.md)

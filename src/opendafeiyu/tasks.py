@@ -59,6 +59,7 @@ class TaskController:
         self.last_seen = None
         self.near_since = None
         self.arrival_distance = .32
+        self.arrival_bearing = .15
         self.started_at = 0.
         self.memory = {}
 
@@ -118,7 +119,7 @@ class TaskController:
         # A small release margin prevents gait-induced pixel-size oscillation
         # from repeatedly restarting the arrival confirmation after first entry.
         threshold = self.arrival_distance + (.03 if self.near_since is not None else 0.)
-        if det.distance <= threshold and abs(det.bearing) < .15:
+        if det.distance <= threshold and abs(det.bearing) < self.arrival_bearing:
             if self.near_since is None:
                 self.near_since = now
             if now - self.near_since >= .3:

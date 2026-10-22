@@ -6,6 +6,8 @@
 
 持续更新中 · 当前为 MuJoCo 仿真阶段。
 
+开发分支提供可选的 [DeepSeek 文本交互（VD25）](docs/INTERACTION.md)与[步态测量、可打断小跳（VD26）](docs/EMBODIMENT.md)。下面的演示与默认入口仍对应已发布的 VD24；开发功能尚未发布到 Release。
+
 **简体中文** · [English](README.en.md) · [日本語](README.ja.md)
 
 [完整演示](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [快速开始](#快速开始) · [路线图](#路线图) · [交给 Agent](#交给-agent) · [开发文档](docs/CHARACTER.md)

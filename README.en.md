@@ -6,6 +6,8 @@ An open-source embodied character project for AI companionship and human-robot i
 
 Actively developed · Current stage: MuJoCo simulation.
 
+The development branch includes optional [DeepSeek text interaction (VD25)](docs/INTERACTION.md) and [motion measurements with interruptible hops (VD26)](docs/EMBODIMENT.md). The demos and default entry point below still use the released VD24 profile; these development features are not yet in a Release.
+
 [简体中文](README.md) · **English** · [日本語](README.ja.md)
 
 [Watch the demo](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [Quick start](#quick-start) · [Roadmap](#roadmap) · [For agents](#for-agents) · [Developer guide](docs/CHARACTER.md)
