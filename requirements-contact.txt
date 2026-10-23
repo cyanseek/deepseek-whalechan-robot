@@ -1,0 +1,3 @@
+# Optional VD28 contact-walking profile; VD24/25/26 do not require this solver.
+-r requirements-character.txt
+clarabel==0.11.1

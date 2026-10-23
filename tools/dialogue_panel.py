@@ -10,7 +10,7 @@ import urllib.request
 from PIL import Image,ImageTk
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',type=int,default=18852);p.add_argument('--profile',choices=['VD25','VD26'],default='VD25');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',type=int,default=18852);p.add_argument('--profile',choices=['VD25','VD26','VD28'],default='VD25');args=p.parse_args()
     endpoint=f'http://127.0.0.1:{args.port}'
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
     root=tk.Tk();root.title('鲸鱼娘 · '+args.profile+' 具身仿真交互');root.geometry('1100x790')

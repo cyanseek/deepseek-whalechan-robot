@@ -29,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--input-source', choices=['live_text','automated_demo'], default='live_text')
-    parser.add_argument('--profile', choices=['VD25','VD26'], default='VD25')
+    parser.add_argument('--profile', choices=['VD25','VD26','VD28'], default='VD25')
     parser.add_argument('--target-x', type=float, default=.48)
     parser.add_argument('--target-y', type=float, default=.06)
     parser.add_argument('--foot-view', action='store_true')
@@ -53,7 +53,12 @@ def main():
     tree.find(".//body[@name='target_red']").set('pos',f'{args.target_x} {args.target_y} .24')
     xml=ET.tostring(tree,encoding='unicode');m=mujoco.MjModel.from_xml_string(xml,assets)
     d = mujoco.MjData(m); mujoco.mj_forward(m,d)
-    low = (MeasuredStepController if args.profile=='VD26' else LivelyController)(m,d,binding)
+    if args.profile=='VD28':
+        from opendafeiyu.bluefatfish_v28 import ContactWalkController
+        low=ContactWalkController(m,d,binding)
+    else:
+        low = (MeasuredStepController if args.profile=='VD26' else LivelyController)(m,d,binding)
+    control_stride=getattr(low,'control_stride',10)
     metrics = MotionMetrics(m,low)
     face = CheerfulExpressions(m,args.delivery,assets['expression-cutout-map.npz'])
     interaction = InteractionController(low, translator)
@@ -139,19 +144,26 @@ def main():
                 text,received_wall=messages.get_nowait()
                 interaction.submit(text,now,source='live_text_endpoint');received+=1
                 interaction.event(now,'input_delivery',queue_latency_wall_s=time.perf_counter()-received_wall)
-            if step%10==0:
+            if step%control_stride==0:
                 before=[v.copy() for v in (d.qpos,d.qvel,d.mocap_pos,d.mocap_quat,d.xfrc_applied,d.qfrc_applied)]
                 tick=time.perf_counter();command=interaction.tick(detections,now)
                 for previous,current in zip(before,(d.qpos,d.qvel,d.mocap_pos,d.mocap_quat,d.xfrc_applied,d.qfrc_applied)):
                     if not np.array_equal(previous,current):raise RuntimeError('Controller modified live state or external forces')
                 state_checks+=1
-                emotion=interaction.expression(now)
-                face.update(now,emotion);control_wall+=time.perf_counter()-tick
+                if step%10==0:
+                    emotion=interaction.expression(now)
+                    face.update(now,emotion)
+                control_wall+=time.perf_counter()-tick
+            if hasattr(low,'apply_actuation'):
+                before=[v.copy() for v in (d.qpos,d.qvel,d.mocap_pos,d.mocap_quat,d.xfrc_applied,d.qfrc_applied)]
+                low.apply_actuation()
+                for previous,current in zip(before,(d.qpos,d.qvel,d.mocap_pos,d.mocap_quat,d.xfrc_applied,d.qfrc_applied)):
+                    if not np.array_equal(previous,current):raise RuntimeError('Actuation modified live state or external forces')
             tick=time.perf_counter();mujoco.mj_step(m,d);physics_wall+=time.perf_counter()-tick
             orientation=d.xmat[low.base].reshape(3,3)@R_FORWARD.T
             tilt=float(np.arccos(np.clip(orientation[2,2],-1,1)));peak_tilt=max(peak_tilt,tilt)
             peak_force=np.maximum(peak_force,np.abs(d.actuator_force))
-            if tilt>.65 or low.phase=='failed':raise RuntimeError('Stability check failed')
+            if tilt>(.15 if args.profile=='VD28' else .65) or low.phase=='failed':raise RuntimeError('Stability check failed')
             if np.any(np.abs(d.actuator_force)>m.actuator_forcerange[:,1]+1e-7):raise RuntimeError('Actuator limit exceeded')
             if step%10==0:
                 detail=metrics.sample(d,low.phase in ('shift','swing','land'))
@@ -189,7 +201,7 @@ def main():
                     foot_renderer.update_scene(d,camera=foot_camera,scene_option=foot_option)
                     frame.paste(Image.fromarray(foot_renderer.render()),(16,480))
                     draw.rectangle((16,446,336,480),fill=(20,29,43))
-                    draw.text((22,450),'物理脚部：碰撞形体 / 同步回放',font=small,fill='white')
+                    draw.text((22,450),'物理脚部：同一实时仿真状态',font=small,fill='white')
                 draw.rectangle((0,690,1280,720),fill=(20,29,43))
                 draw.text((20,694),f'步数 {low.steps_completed} | 脚底离地 L/R {detail["clearance_m"][0]*1000:.1f}/{detail["clearance_m"][1]*1000:.1f} mm | {"自动文本测试客户端" if args.input_source=="automated_demo" else "本地文本输入"} · 无麦克风 · 原速',font=small,fill='white')
                 if frames==0:frame.save(args.out/'frame-start.png')
@@ -219,10 +231,12 @@ def main():
             'actuators':m.nu,'steps_completed':low.steps_completed,'controller_state_write_checks':state_checks,
             'root_writes_after_initialization':0,'max_actuator_force':peak_force.tolist(),'source_hashes':hashes,
             'observation':'robot RGB color markers; ideal simulated proprioception','input_source':args.input_source+' via external loopback text endpoint',
-            'control':'one simulation-thread owner; asynchronous language intents; explicit IK/PD',
+            'control':'one simulation-thread owner; asynchronous language intents; '+('contact-constrained inverse dynamics / prescribed straight gait' if args.profile=='VD28' else 'explicit IK/PD'),
+            'max_solver_constraint_residual':getattr(low,'solver_residual',None),
             'model':translator.model if translator else None,'events':interaction.events,'motion_events':low.events}
         (args.out/'run.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         (args.out/'samples.json').write_text(json.dumps(samples,ensure_ascii=False),encoding='utf-8')
+        if failure and hasattr(low,'solver_debug'):np.savez_compressed(args.out/'qp-at-failure.npz',**low.solver_debug)
         np.savez_compressed(args.out/'trajectory.npz',qpos=np.asarray(qpos),ctrl=np.asarray(ctrl))
         print(json.dumps({k:report[k] for k in ('version','backend','sim_s','wall_s','failure','final_phase','inputs_received')},ensure_ascii=False))
     return 1 if failure else 0
