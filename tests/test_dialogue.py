@@ -108,3 +108,12 @@ def test_vd25_rejects_interactive_hop_and_keeps_support(built):
     assert c.action is None and c.status=='reply'
     assert c.low.phase=='ready' and all(c.low.contacts())
     assert any(e['event']=='unsupported_profile_action' for e in c.events)
+
+@pytest.mark.parametrize('text', ['点头', '摇头', '向左看', '向右看'])
+def test_legacy_profile_declines_new_head_actions(built, text):
+    m,d,c=runtime(built)
+    try:
+        c.submit(text,float(d.time))
+        assert c.action is None and c.status=='reply'
+        assert c.events[-1]['event']=='unsupported_profile_action'
+    finally:c.close()

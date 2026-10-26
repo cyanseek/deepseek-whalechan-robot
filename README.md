@@ -6,7 +6,7 @@
 
 持续更新中 · 当前为 MuJoCo 仿真阶段。
 
-开发分支提供可选的 [DeepSeek 文本交互（VD25）](docs/INTERACTION.md)与[步态测量、可打断小跳（VD26）](docs/EMBODIMENT.md)。下面的演示与默认入口仍对应已发布的 VD24；开发功能尚未发布到 Release。
+当前源码提供 [DeepSeek 文本交互](docs/INTERACTION.md)、[接触步态与停稳](docs/CONTACT_WALK.md)，以及[点头、组合动作、暂停与继续](docs/BEHAVIORS.md)。默认入口与下方39秒演示仍为 VD24；新增入口通过源码运行。
 
 **简体中文** · [English](README.en.md) · [日本語](README.ja.md)
 
@@ -84,6 +84,19 @@ py -3.13 -m venv .venv-sim
 
 每次启动自动建立独立的 `runs/` 目录。录制文件为 `simulation.mp4`，结果为 `run.json`，其余轨迹和快照见[输出说明](docs/AGENT_GUIDE.md#outputs)。取消任务采用接触感知的动作结束流程。
 
+### 体验可打断互动
+
+打开离线面板，输入“过来”“停一下”“继续”“打个招呼”。接近任务使用机器人相机识别红色标记；动作按完成反馈衔接。
+
+```powershell
+./.venv-sim/Scripts/python.exe -m pip install -r requirements-contact.txt
+./Start-WhaleChan-Behaviors.ps1 -Backend commands -Record
+
+./.venv-sim/Scripts/python.exe tools/run_behavior_demo.py --out runs/behavior-demo-01 --video
+```
+
+完整自动文本客户端演示包含行走、暂停、继续和挥手→摆尾→点头；录制约46秒仿真过程。接入自己的 DeepSeek API 见[配置说明](docs/INTERACTION.md)，组合动作接口见[开发文档](docs/BEHAVIORS.md)。
+
 ## 路线图
 
 我们的目标是让大肥鱼成为能对话、能行动、有角色个性的具身伙伴。一个具体的体验是：你说“过来”，她走近打招呼；途中说“等一下”，她停稳并回应；换个目标，她继续完成新的任务。
@@ -91,11 +104,12 @@ py -3.13 -m venv .venv-sim
 | 阶段 | 内容 |
 | --- | --- |
 | **已有：身体与表达** | MuJoCo 双足小碎步、鲸尾协调、表情、颜色目标接近与可取消任务；配套资产安装器和真实录像。 |
-| **下一步：运动与互动** | 改善速度跟踪、抗扰平衡和落地；接入 DeepSeek 与语音，完成可打断、可改变目标的互动演示。 |
+| **源码可用：文本与动作** | DeepSeek 文本意图、可打断接近与停稳、头部反馈、动作组合和暂停/继续；支持离线明确指令。 |
+| **下一步：运动与语音** | 速度跟踪、足滑与抗扰平衡，匹配身体的学习策略，以及语音输入。 |
 | **继续扩展：教她新行为** | 把问好、跟随、陪伴等行为做成可复现示例，提供稳定的任务接口，让开发者和 Agent 添加、测试与分享新行为。 |
 | **走向实体：仿真到实机** | 完成机械、电机、传感器与标定，让同一套任务逻辑驱动实体身体，逐步验证迎接互动、桌边陪伴和日常提醒。 |
 
-计划由 DeepSeek 处理对话与高层意图，本地控制负责平衡、动作与结果反馈。运动路线将评估学习策略、执行器建模和仿真到实机的迁移；开发入口逐步开放到行为示例与匹配的策略。当前 VD24 使用 IK/PD，DeepSeek/语音闭环、行为扩展接口与实机仍在路线图中。[开发路线与验收目标](docs/ROADMAP.md)
+DeepSeek 接口处理文本与高层意图，本地控制负责平衡、动作与结果反馈。当前源码包含可复现的行为组合；默认 VD24 使用 IK/PD，可选接触步态使用约束逆动力学。学习步态、语音与实机是后续方向。[开发路线与验收目标](docs/ROADMAP.md)
 
 ## 交给 Agent
 

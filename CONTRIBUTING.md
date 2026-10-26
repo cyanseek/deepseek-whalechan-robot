@@ -3,7 +3,7 @@
 Start with a reproducible behavior: input, expected outcome, actual result and rerun command.
 See [the current body and controller](docs/CHARACTER.md) and [development milestones](docs/ROADMAP.md).
 
-Install `requirements-dev.txt` and the matching character assets, then run:
+Install `requirements-dev.txt`, `requirements-contact.txt` and the matching character assets, then run:
 
 ```powershell
 ./.venv-sim/Scripts/python.exe -m pytest -q -ra

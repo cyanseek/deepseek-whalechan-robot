@@ -48,19 +48,21 @@
   ],
   "future_work": [
     "velocity tracking, disturbance recovery and landing evaluation on the current body",
-    "DeepSeek conversation and voice with interruptible, observable task feedback on VD24",
-    "reproducible behavior examples and a stable extension interface for developers and agents",
     "learned locomotion policies with matching body, actuator and observation/action contracts",
     "prominent jumps",
     "physical companion hardware, actuator identification and sim-to-real validation",
-    "greetings, following, desk-side interaction and focus/break reminders"
+    "greetings, following, desk-side interaction and focus/break reminders",
+    "voice input and additional behavior examples"
   ],
   "documents": {
     "agent_guide": "docs/AGENT_GUIDE.md",
     "assets": "docs/ASSETS.md",
     "demo": "docs/DEMO.md",
     "architecture": "docs/CHARACTER.md",
-    "roadmap": "docs/ROADMAP.md"
+    "roadmap": "docs/ROADMAP.md",
+    "interaction": "docs/INTERACTION.md",
+    "behaviors": "docs/BEHAVIORS.md",
+    "contact_walk": "docs/CONTACT_WALK.md"
   },
   "commands": {
     "preflight": [
@@ -101,6 +103,12 @@
     ],
     "install_assets": [
       "tools/install_character_assets.py"
+    ],
+    "behavior_demo": [
+      "tools/run_behavior_demo.py",
+      "--out",
+      "runs/behavior-demo-01",
+      "--video"
     ]
   },
   "command_runtime": ".venv-sim/Scripts/python.exe",
@@ -132,5 +140,31 @@
   ],
   "release_url": "https://github.com/cyanseek/deepseek-whalechan-robot/releases/tag/vd24-ar2",
   "demo_url": "https://cyanseek.github.io/deepseek-whalechan-robot/watch.html",
-  "repository_name": "deepseek-whalechan-robot"
+  "repository_name": "deepseek-whalechan-robot",
+  "source_extensions": {
+    "text_interaction": {
+      "document": "docs/INTERACTION.md",
+      "launcher": "Start-WhaleChan-Interaction.ps1",
+      "backend_options": [
+        "commands",
+        "deepseek"
+      ]
+    },
+    "contact_walk": {
+      "document": "docs/CONTACT_WALK.md",
+      "launcher": "Start-WhaleChan-ContactWalk.ps1",
+      "profile": "VD28"
+    },
+    "behaviors": {
+      "document": "docs/BEHAVIORS.md",
+      "launcher": "Start-WhaleChan-Behaviors.ps1",
+      "profile": "VD29",
+      "features": [
+        "head feedback",
+        "named sequences",
+        "supported pause/resume",
+        "per-foot contact metrics"
+      ]
+    }
+  }
 }

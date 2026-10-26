@@ -48,4 +48,4 @@ The default smile is a spatially selected derivative of the existing happy morph
 
 Start with a reproducible input and inspect task state, physical outcome and video together. A foot-clearance measurement is not the same as center-of-mass jump height. Playback fps does not measure control throughput. Cancellation finishes a supported motion; hardware emergency stop and power-off are separate future interfaces.
 
-Current VD24 uses explicit IK/PD and state machines. The older language/voice pipeline and Open Duck learned policy belong to different profiles; they are not automatically capabilities of this body. S2 needs mechanical design, measured inertias, actuator selection and hardware validation.
+Current default VD24 uses explicit IK/PD and state machines. Optional [text interaction](INTERACTION.md), [contact walking](CONTACT_WALK.md) and [feedback-driven behaviors](BEHAVIORS.md) use the same VD24 body through their matched controllers. Voice input, learned locomotion and S2 hardware require their own implementation and evaluation; S2 also needs measured inertias and actuator calibration.

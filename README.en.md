@@ -6,7 +6,7 @@ An open-source embodied character project for AI companionship and human-robot i
 
 Actively developed · Current stage: MuJoCo simulation.
 
-The development branch includes optional [DeepSeek text interaction (VD25)](docs/INTERACTION.md) and [motion measurements with interruptible hops (VD26)](docs/EMBODIMENT.md). The demos and default entry point below still use the released VD24 profile; these development features are not yet in a Release.
+The current source includes [DeepSeek text interaction](docs/INTERACTION.md), [contact walking and supported stops](docs/CONTACT_WALK.md), and [head gestures, behavior sequences, pause and resume](docs/BEHAVIORS.md). The default entry point and 39-second demo below remain VD24; the additional entry points run from source.
 
 [简体中文](README.md) · **English** · [日本語](README.ja.md)
 
@@ -86,6 +86,19 @@ The installer downloads from [GitHub Releases](https://github.com/cyanseek/deeps
 
 Each launch creates a unique directory under `runs/`. Recordings are named `simulation.mp4`; results are in `run.json`. See the [output reference](docs/AGENT_GUIDE.md#outputs) for trajectories and snapshots. Cancellation uses a contact-aware finishing sequence.
 
+### Try interruptible interaction
+
+Open the offline panel and enter “过来”, “停一下”, “继续” or “打个招呼”. Approach uses the robot camera to locate the red marker; sequences advance on completion feedback.
+
+```powershell
+./.venv-sim/Scripts/python.exe -m pip install -r requirements-contact.txt
+./Start-WhaleChan-Behaviors.ps1 -Backend commands -Record
+
+./.venv-sim/Scripts/python.exe tools/run_behavior_demo.py --out runs/behavior-demo-01 --video
+```
+
+The automated text-client demo records about 46 simulated seconds of walking, pause/resume and wave → tail → nod. See [DeepSeek API setup](docs/INTERACTION.md) and the [behavior interface](docs/BEHAVIORS.md).
+
 ## Roadmap
 
 We aim to build a companion that can converse, act and express a character of her own. A concrete experience: ask her to come closer and she greets you; say “wait” on the way and she settles and responds; change the target and she continues with the new task.
@@ -93,11 +106,12 @@ We aim to build a companion that can converse, act and express a character of he
 | Stage | Scope |
 | --- | --- |
 | **Available: body and expression** | MuJoCo small-step locomotion, tail coordination, expressions, colored-marker approach and cancelable tasks, with a matching asset installer and real recordings. |
-| **Next: motion and interaction** | Improve velocity tracking, balance under disturbances and landings; connect DeepSeek and voice for an interactive demo that accepts interruptions and changed targets. |
+| **Available from source: text and actions** | DeepSeek text intents, interruptible approach and supported stopping, head feedback, behavior sequences and pause/resume; explicit offline commands are supported. |
+| **Next: motion and voice** | Velocity tracking, foot slip and disturbance balance, body-matched learned policies, and voice input. |
 | **Expand: teach her new behaviors** | Turn greetings, following and companionship into reproducible examples, with a stable task interface for developers and agents to add, test and share behaviors. |
 | **Build the physical companion** | Develop mechanics, actuators, sensors and calibration so the same task logic can drive a physical body; progressively validate greetings, desk-side companionship and reminders. |
 
-The planned architecture assigns conversation and high-level intent to DeepSeek, with local control handling balance, actions and result feedback. The motion track will evaluate learned policies, actuator models and sim-to-real transfer; developer tools will grow around behavior examples and compatible policies. VD24 currently uses IK/PD; the DeepSeek/voice loop, behavior extension interface and hardware remain on the roadmap. [Development milestones and acceptance goals](docs/ROADMAP.md)
+The DeepSeek interface handles text and high-level intent; local control handles balance, actions and result feedback. Source includes reproducible behavior sequences. Default VD24 uses IK/PD; optional contact walking uses constrained inverse dynamics. Learned locomotion, voice input and hardware are future milestones. [Development milestones and acceptance goals](docs/ROADMAP.md)
 
 ## For agents
 

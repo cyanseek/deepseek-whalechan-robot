@@ -6,9 +6,9 @@ This page describes planned work. Current commands and measured capabilities rem
 
 ## 1. Make the same character easy to run
 
-The matching AR1 asset ZIP, verified installer and isolated-source stand/demo checks are available locally. The public download endpoint is pending release.
+The matching AR2 asset ZIP and verified installer are available from the public GitHub Release. The repository quickstart downloads the assets and runs the VD24 demonstration.
 
-The next delivery goal is a fresh setup that obtains the matching assets, passes preflight and produces the same 39-second demonstration without a developer's private directories. Installation should report useful errors and preserve existing user modifications. Record the dependency versions, command, outcome and video. Keep the CPU inference/rendering path separate from any future GPU training environment.
+Keep fresh-source setup checks that obtain matching assets, pass preflight and produce the same demonstration without a developer's private directories. Installation reports useful errors and preserves existing user modifications. Record dependency versions, command, outcome and video. Keep CPU inference/rendering separate from GPU training environments.
 
 ## 2. Improve movement while preserving expression
 
@@ -20,7 +20,7 @@ MicroDuck's training/deployment workflow is a useful reference. Its existing pol
 
 ## 3. Make conversation change what she does
 
-The first target is a continuous interaction: **come closer → wait → change target → greet**. Add DeepSeek and voice to a constrained high-level task interface. Local control owns balance and actuator output; task results feed back to the dialogue.
+The source [text interface](INTERACTION.md) connects DeepSeek high-level intents to local control, with cancellation and observable feedback. The next target extends this interaction to voice and broader perception: **come closer → wait → change target → greet**. Local control owns balance and actuator output.
 
 Accept the feature when a person can interrupt or change a task during a live run, the character responds through physical motion and expression, and observable events agree with the video. Measure request-to-response and cancellation latency, target-arrival error and task outcome. Include a missing-target case and a model/network failure case. Separate operator input, scripted input, actual model output and sensor observations in the record.
 
@@ -28,11 +28,11 @@ Start with the current visible markers; extend perception as each target class i
 
 ## 4. Let others add behaviors
 
-Start with one documented behavior extension, such as a greeting that coordinates posture, tail and expression. Reuse the current task and recording code before building a larger framework.
+The source [behavior interface](BEHAVIORS.md) provides a greeting sequence, bounded head feedback, supported pause/resume and an offline external-client demonstration. Extend these examples using the existing task and recording code.
 
 A proposed behavior package contains its input schema, supported body/controller version, completion and cancellation conditions, asset/code terms, a short example and a rerun command. Learned policies additionally need their complete model binding and evaluation. A stable interface should let keyboard input, a coding agent and a language model request the same behavior and receive the same task outcome.
 
-The milestone is an independently reproduced behavior contribution. A gallery of compatible behaviors can grow from that evidence. The extension API, policy installer and gallery are planned; today's Agent entry is the Python CLI documented in [AGENT_GUIDE.md](AGENT_GUIDE.md).
+The next milestone is an independently reproduced behavior contribution. A gallery of compatible behaviors can grow from that evidence. A policy installer and gallery remain planned; current behavior and Agent entry points are documented in [AGENT_GUIDE.md](AGENT_GUIDE.md).
 
 ## 5. Transfer the experience to hardware
 

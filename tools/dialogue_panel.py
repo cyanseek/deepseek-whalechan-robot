@@ -10,7 +10,7 @@ import urllib.request
 from PIL import Image,ImageTk
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',type=int,default=18852);p.add_argument('--profile',choices=['VD25','VD26','VD28'],default='VD25');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',type=int,default=18852);p.add_argument('--profile',choices=['VD25','VD26','VD28','VD29'],default='VD25');p.add_argument('--behaviors',action='store_true');args=p.parse_args()
     endpoint=f'http://127.0.0.1:{args.port}'
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
     root=tk.Tk();root.title('鲸鱼娘 · '+args.profile+' 具身仿真交互');root.geometry('1100x790')
@@ -27,6 +27,14 @@ def main():
     buttons=ttk.Frame(root);buttons.pack(fill='x',padx=15,pady=8)
     for label,value in [('过来（红色标记）','过来'),('挥手','挥手'),('摆尾','摆尾'),('停一下','停一下')]+([('小跳','跳一下')] if args.profile=='VD26' else []):
         ttk.Button(buttons,text=label,command=lambda v=value:send(v)).pack(side='left',padx=5)
+    if args.profile=='VD29':
+        feedback=ttk.Frame(root);feedback.pack(fill='x',padx=15,pady=4)
+        for word in ('点头','摇头','向左看','向右看'):
+            ttk.Button(feedback,text=word,command=lambda v=word:send(v)).pack(side='left',padx=5)
+    if args.behaviors:
+        routines=ttk.Frame(root);routines.pack(fill='x',padx=15,pady=4)
+        for word in ('打个招呼','看看左右','继续','取消任务'):
+            ttk.Button(routines,text=word,command=lambda v=word:send(v)).pack(side='left',padx=5)
     ttk.Label(root,text='“过来”使用相机可见红标记。停止会完成收步；运行结束后自动关闭面板。').pack(anchor='w',padx=15,pady=5)
     def worker():
         while not closed.is_set():
@@ -47,10 +55,14 @@ def main():
             if error:status.set(error)
             else:
                 names={'idle':'等待指令','thinking':'正在理解','waiting_for_support':'先站稳，再执行','approach':'走近标记',
-                       'wave':'挥手','tail':'摆尾','jump':'准备小跳与落地','stopping':'正在收步','stopped':'已经停稳','complete':'动作完成',
+                       'wave':'挥手','tail':'摆尾','jump':'准备小跳与落地','nod':'点头','shake':'摇头',
+                       'look_left':'向自己的左边看','look_right':'向自己的右边看','stopping':'正在收步与回正','stopped':'已经停稳','complete':'动作完成',
                        'arrived':'到达标记附近','settling_at_target':'正在站稳','lost':'目标丢失','reply':'回应','model_error':'请重试'}
                 backend='DeepSeek 已接入' if state.get('backend')=='deepseek' else '离线指令模式'
-                status.set(f"{backend} | {names.get(state.get('status'),state.get('status',''))} | 仿真 {state.get('sim_s',0):.1f}s")
+                behavior=state.get('behavior',{})
+                extra=' | 已暂停，可继续' if behavior.get('can_resume') else ''
+                if behavior.get('remaining'):extra+=' | 剩余 '+str(len(behavior['remaining']))+' 个动作'
+                status.set(f"{backend} | {names.get(state.get('status'),state.get('status',''))} | 仿真 {state.get('sim_s',0):.1f}s"+extra)
                 reply.set('鲸鱼娘：'+state.get('reply',''))
                 if raw:
                     im=Image.open(io.BytesIO(raw));im.thumbnail((1080,607));photo=ImageTk.PhotoImage(im)

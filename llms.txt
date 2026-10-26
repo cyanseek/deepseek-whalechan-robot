@@ -2,7 +2,7 @@
 
 > Aliases: OpenDafeiyu, DeepSeek 鲸鱼娘具身机器人. DeepSeek 大肥鱼 / 鲸鱼娘 / Dafeiyu / Whale-chan embodied character simulation in MuJoCo. Current source demo: VD2.4, Windows, 23 actuators, contact-aware small steps, turning, low hops, whale-tail coordination, expressions and RGB marker approach.
 
-Source-run workflow; matching separately licensed character assets are installed by tools/install_character_assets.py from the AR2 runtime ZIP. The matching ZIP is distributed through the project GitHub Release. The installer downloads and verifies it automatically. No API key or LLM is needed for the demonstrated sequence. Code license: MIT; character/model/media terms are separate. Current capabilities are simulation. Planned next stages connect DeepSeek conversation and voice to high-level tasks, followed by physical companionship; those integrations are not yet available on this body.
+Source-run workflow; matching separately licensed character assets are installed by tools/install_character_assets.py from the AR2 runtime ZIP. The matching ZIP is distributed through the project GitHub Release. The installer downloads and verifies it automatically. No API key or LLM is needed for the demonstrated sequence. Code license: MIT; character/model/media terms are separate. Current capabilities are simulation. Current source adds optional DeepSeek text intents, contact walking, head gestures and feedback-driven behavior sequences with supported pause/resume. Voice input, learned locomotion and physical companionship remain planned.
 
 ## Start
 
@@ -20,3 +20,7 @@ Source-run workflow; matching separately licensed character assets are installed
 - [Roadmap](docs/ROADMAP.md): Planned interaction, motion learning, behavior extensions and physical validation; distinct from current capabilities.
 - [Contributing](CONTRIBUTING.md): Reproducible behavior changes and validation.
 - [Code license](LICENSE): MIT terms for project-authored code.
+
+- [Text interaction](docs/INTERACTION.md): Offline commands and private DeepSeek API setup.
+- [Contact walking](docs/CONTACT_WALK.md): Matched optional controller and supported stops.
+- [Behavior sequences](docs/BEHAVIORS.md): Interactive routines, pause/resume, external-client demo and per-foot measurements.

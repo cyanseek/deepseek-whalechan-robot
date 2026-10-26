@@ -1,5 +1,7 @@
 # Interruptible text interaction (VD25)
 
+Optional local development: [VD29 feedback gestures](FEEDBACK_GESTURES.md) adds supported, interruptible nod/shake/left/right head motions through `Start-WhaleChan-Gestures.ps1`. Earlier profiles explicitly decline these additional intents.
+
 For the newer **VD26** navigation/hop development profile, measurements and native validation commands, see [EMBODIMENT.md](EMBODIMENT.md) and `Start-WhaleChan-Embodiment.ps1`. The existing VD25 entry point and four-button interface remain available.
 
 VD25 is an opt-in development entry point using the VD24 MuJoCo body and IK/PD controller. Type a request, watch its interpretation and physical execution, and send a new request to interrupt it. The existing VD24 launchers remain available.

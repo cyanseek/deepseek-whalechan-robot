@@ -60,7 +60,29 @@ def test_real_foot_lift_and_stop_resume_without_state_writes(built):
     assert low.steps_completed > before
     assert low.phase == 'ready' and all(low.contacts())
     assert min(metrics.report()['walking_peak_sole_clearance_m']) > .003
+    # Sensor-derived footfalls independently confirm bilateral stepping.
+    assert min(metrics.report()['confirmed_steps_by_foot']) >= 1
+    assert metrics.report()['alternating_transitions'] >= 1
     assert low.solver_residual < 1e-4
+
+
+def test_slip_measurement_preserves_left_and_right_identity(built):
+    m, d, low, _ = runtime(built)
+    metrics = MotionMetrics(m, low)
+    advance(m, d, low, metrics, 3)
+    # Measurement fixture: isolate left-ankle velocity at a supported pose.
+    d.qvel[:] = 0
+    d.qvel[m.jnt_dofadr[m.joint('left_ankle_roll').id]] = .5
+    mujoco.mj_forward(m, d)
+    metrics = MotionMetrics(m, low)
+    sample = metrics.sample(d, walking=True)
+    speeds = sample['loaded_contact_speed_by_foot_m_s']
+    assert speeds[0] > 1e-4
+    assert speeds[1] == pytest.approx(0, abs=1e-12)
+    report = metrics.report()
+    assert report['loaded_contact_point_slip_by_foot_m'][0] > 0
+    assert sum(report['loaded_contact_point_slip_by_foot_m']) == pytest.approx(report['loaded_contact_point_slip_m'])
+    assert report['loaded_time_by_foot_s'] == pytest.approx([.01, .01])
 
 
 def test_supported_gestures_and_tail_interrupt_in_native_physics(built):

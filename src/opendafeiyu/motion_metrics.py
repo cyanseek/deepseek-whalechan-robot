@@ -2,6 +2,7 @@
 import numpy as np
 import mujoco
 from .bluefatfish import R_FORWARD
+from .footsteps import FootstepTracker
 
 
 class MotionMetrics:
@@ -18,6 +19,9 @@ class MotionMetrics:
         self.foot_peak = np.zeros(2)
         self.max_force = np.zeros(model.nu)
         self.samples = 0
+        self.slip_by_foot = np.zeros(2)
+        self.loaded_time_by_foot = np.zeros(2)
+        self.footsteps = FootstepTracker()
 
     def sample(self, data, walking=False, dt=.01):
         m, low = self.model, self.low
@@ -40,6 +44,7 @@ class MotionMetrics:
                 side = self.soles.index(g)
                 points[side].append(contact.pos.copy()); loads[side].append(force[0])
         speeds = []
+        speeds_by_foot = [None, None]
         for side in range(2):
             if not loads[side]:
                 continue
@@ -48,8 +53,13 @@ class MotionMetrics:
             mujoco.mj_jac(m, data, jp, jr, point, low.feet[side])
             speed = float(np.linalg.norm((jp @ data.qvel)[:2]))
             speeds.append(speed)
+            speeds_by_foot[side] = speed
             if walking:
                 self.slip_path += speed * dt; self.loaded_time += dt
+                self.slip_by_foot[side] += speed * dt
+                self.loaded_time_by_foot[side] += dt
+        self.footsteps.sample(float(data.time), data.geom_xpos[self.soles], clearance,
+                             np.asarray([bool(x) for x in loads]), rotation[:2, 0], walking)
         if walking:
             if self.walk_start is None:
                 self.walk_start = data.qpos[:3].copy()
@@ -65,14 +75,18 @@ class MotionMetrics:
         else:
             self.air_time = 0.
         self.samples += 1
-        return dict(clearance_m=clearance.tolist(), loaded_contact_speed_m_s=speeds, tilt_rad=tilt)
+        return dict(clearance_m=clearance.tolist(), loaded_contact_speed_m_s=speeds,
+                    loaded_contact_speed_by_foot_m_s=speeds_by_foot, tilt_rad=tilt,
+                    confirmed_steps_by_foot=self.footsteps.report()['confirmed_steps_by_foot'])
 
     def report(self):
         delta = self.walk_end - self.walk_start if self.walk_start is not None else np.zeros(3)
         distance = float(np.linalg.norm(delta[:2]))
-        return dict(walking_time_s=self.walk_time, walking_net_displacement_m=delta.tolist(),
+        return dict(**self.footsteps.report(), walking_time_s=self.walk_time, walking_net_displacement_m=delta.tolist(),
                     walking_path_m=self.walk_distance, net_speed_m_s=distance / max(self.walk_time, .001),
                     loaded_contact_point_slip_m=self.slip_path,
+                    loaded_contact_point_slip_by_foot_m=self.slip_by_foot.tolist(),
+                    loaded_time_by_foot_s=self.loaded_time_by_foot.tolist(),
                     mean_loaded_contact_point_speed_m_s=self.slip_path / max(self.loaded_time, .001),
                     slip_per_net_m=self.slip_path / max(distance, .001),
                     walking_peak_sole_clearance_m=self.foot_peak.tolist(),

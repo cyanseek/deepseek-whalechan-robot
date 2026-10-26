@@ -52,8 +52,18 @@ Inspect both the process exit code and the final task outcome. For target approa
 
 ## What to report
 
-Return the exact command, profile, scenario, exit code, `failure`, final status/phase, simulated/wall time and recording path. Describe the controller as explicit IK/PD with ideal simulated proprioception. Distinguish a newly integrated run from a trajectory replay. Large jumps, running, noisy-sensor robustness, current-body language/voice end-to-end behavior and physical hardware are future work.
+Return the exact command, profile, scenario, exit code, `failure`, final status/phase, simulated/wall time and recording path. Describe the controller as explicit IK/PD with ideal simulated proprioception. Distinguish a newly integrated run from a trajectory replay. Large jumps, running, noisy-sensor robustness, voice input and physical hardware are future work.
 
-Future motion learning, task extensions and hardware milestones are described in [ROADMAP.md](ROADMAP.md); those interfaces are planned, not additional commands available in VD24.
+## Source interaction and behavior entry points
+
+Install `requirements-contact.txt` for the optional contact controller. [Text interaction](INTERACTION.md) supports explicit offline commands or a configured DeepSeek API. [Feedback gestures](FEEDBACK_GESTURES.md) and [behavior sequences](BEHAVIORS.md) add head motion, supported pause/resume and completion feedback on the matched VD24 body.
+
+```powershell
+./.venv-sim/Scripts/python.exe tools/run_behavior_demo.py --out runs/agent-behavior-01 --video
+```
+
+This command runs an offline external text client and native physics for 46 simulated seconds. Read `client.json` and `native/run.json`, inspect `native/simulation.mp4`, and compare planner steps with independent `metrics.confirmed_steps_by_foot` and `metrics.alternating_transitions`. The local endpoint is selected by the runner and recorded in `native/endpoint.json`. No API configuration is read by this offline entry.
+
+Motion learning, voice input and hardware milestones are described in [ROADMAP.md](ROADMAP.md).
 
 For code changes, follow [CONTRIBUTING.md](../CONTRIBUTING.md). Preserve prior runs and snapshots. Never obtain motion by teleporting the base, removing relevant contacts or relabelling a replay as a new simulation. User authorization and third-party asset terms still govern any external upload or publication.

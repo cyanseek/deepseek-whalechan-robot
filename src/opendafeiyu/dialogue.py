@@ -11,13 +11,16 @@ import urllib.request
 import numpy as np
 from .tasks import TaskController
 
-ACTIONS = ('approach', 'wave', 'tail', 'jump', 'stop', 'talk')
+HEAD_ACTIONS = ('nod', 'shake', 'look_left', 'look_right')
+ACTIONS = ('approach', 'wave', 'tail', 'jump', 'stop', 'talk') + HEAD_ACTIONS
 STOP_WORDS = {'停', '停下', '停一下', '等一下', '停止', '暂停', 'stop', 'cancel'}
 SYSTEM = '''你是 DeepSeek 鲸鱼娘机器人的高层意图解析器。只输出一个 JSON 对象：
-{"action":"approach|wave|tail|jump|stop|talk","target":"red|green|none","reply":"简短中文回复"}。
+{"action":"approach|wave|tail|jump|nod|shake|look_left|look_right|stop|talk","target":"red|green|none","reply":"简短中文回复"}。
 过来/到我这里：approach,red；本演示用可见红色标记代表用户的位置，不是声音定位。
 去绿色标记：approach,green。挥手/打招呼：wave,none。摆尾/甩尾：tail,none。跳一下/小跳：jump,none，只支持站稳后的小幅跳跃。
 停下/停一下/等一下：stop,none。聊天、否定动作、含糊、未支持要求：talk,none。
+点头：nod,none；摇头：shake,none；向角色自己的左边看/右边看：look_left/look_right,none。
+这些是短暂转头后回正的动作，不是视觉追踪或转身走路；同意或不同意的聊天不要擅自转为动作。
 只能选一个当前动作；支撑与停稳是控制器执行动作的前置条件，“停稳后挥手”仍是 wave。
 真正包含多个目标动作的要求（例如“挥手然后摆尾”）请用 talk 说明需分步提出。禁止原始关节、代码、系统或工具操作。
 reply 不超过60字，表达接收意图，不声称已经走到、站稳或完成；完成由真实控制反馈确认。
@@ -47,7 +50,11 @@ def command_task(text):
     elif word in ('挥手', '打招呼', 'wave'): action, target, reply = 'wave', 'none', '好呀，向你挥挥手。'
     elif word in ('摆尾', '摆尾巴', '甩尾巴', 'tail'): action, target, reply = 'tail', 'none', '摆摆我的鲸鱼尾巴。'
     elif word in ('跳一下', '小跳', '跳跃', 'jump'): action, target, reply = 'jump', 'none', '好呀，先站稳，再轻轻跳一下。'
-    else: action, target, reply = 'talk', 'none', '离线模式支持：过来、挥手、摆尾、跳一下、停一下。'
+    elif word in ('点头', 'nod'): action, target, reply = 'nod', 'none', '好呀，轻轻点点头。'
+    elif word in ('摇头', 'shake'): action, target, reply = 'shake', 'none', '好呀，轻轻摇摇头。'
+    elif word in ('向左看', 'look left'): action, target, reply = 'look_left', 'none', '向我的左边看看，再回正。'
+    elif word in ('向右看', 'look right'): action, target, reply = 'look_right', 'none', '向我的右边看看，再回正。'
+    else: action, target, reply = 'talk', 'none', '离线支持过来、挥手、摆尾、停一下；新动作请使用对应入口。'
     return {'action': action, 'target': target, 'reply': reply}
 
 class DeepSeekClient:
@@ -143,6 +150,11 @@ class InteractionController:
             self.event(now, 'stale_response_rejected', response_generation=generation)
             return False
         task = validate_task(task)
+        if task['action'] in HEAD_ACTIONS and task['action'] not in getattr(self.low, 'interaction_gestures', ()):
+            self.action = None; self.status = 'reply'
+            self.reply = '点头、摇头和左右看请使用 VD29 动作入口；当前版本先保持站稳。'
+            self.event(now, 'unsupported_profile_action', action=task['action'])
+            return True
         if task['action'] == 'jump' and not getattr(self.low, 'interaction_jump', False):
             self.action = None; self.status = 'reply'
             self.reply = '交互小跳请使用 VD26 具身入口；当前版本先保持站稳。'
@@ -206,16 +218,18 @@ class InteractionController:
                 self.stop_requested = now; self.stable_since = None
                 if self.nav.status=='arrived':self.status='settling_at_target'
                 self.reply = '到附近了，正在站稳。' if self.nav.status == 'arrived' else '看不到目标了，我先停下。'
-        elif self.action in ('wave', 'tail', 'jump') and self.stop_requested is None:
+        elif self.action in ('wave', 'tail', 'jump') + HEAD_ACTIONS and self.stop_requested is None:
             self.low.set_precision_motion(False)
             if supported:
                 if self.action == 'wave': low_status = 'arrived'
                 elif not self.gesture_started:
-                    self.gesture_started = self.low.request_jump() if self.action == 'jump' else self.low.request_tail()
+                    self.gesture_started = (self.low.request_gesture(self.action) if self.action in HEAD_ACTIONS else
+                                            self.low.request_jump() if self.action == 'jump' else self.low.request_tail())
             if self.action == 'wave' and self.low.wave_start is not None: self.gesture_started = True
             if self.gesture_started:
                 self.status = self.action
-                finished = (self.low.wave_done if self.action == 'wave' else
+                finished = (self.low.head_done if self.action in HEAD_ACTIONS else
+                            self.low.wave_done if self.action == 'wave' else
                             self.low.jump_done if self.action == 'jump' else self.low.tail_started is None)
                 if finished:
                     self.event(now, 'action_completed', action=self.action)
@@ -227,6 +241,8 @@ class InteractionController:
             settled = (self.low.phase == 'ready' and all(self.low.contacts())
                        and np.linalg.norm(self.low.data.qvel[:3]) < .03
                        and np.linalg.norm(self.low.data.qvel[3:6]) < .15)
+            if hasattr(self.low, 'feedback_settled'):
+                settled = settled and self.low.feedback_settled()
             if settled:
                 if self.stable_since is None: self.stable_since = now
                 if now-self.stable_since >= .15:
