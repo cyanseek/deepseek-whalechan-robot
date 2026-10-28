@@ -66,4 +66,16 @@ This command runs an offline external text client and native physics for 46 simu
 
 Motion learning, voice input and hardware milestones are described in [ROADMAP.md](ROADMAP.md).
 
+## Experimental policy training
+
+[training/README.md](../training/README.md) provides a separate Linux/WSL Python 3.12
+environment for mjlab/RSL-RL training on the VD32 dynamics candidate. Use
+`whalechan-train`, `whalechan-audit-data`, `whalechan-export` and
+`whalechan-evaluate` in that environment. Its 78-input/23-action policy runs at
+50 Hz with a 1 kHz estimated motor model. Keep these artifacts separate from the
+VD24 visual runtime. Inspect `qualified`, per-foot slip, stops and heading in the
+native evaluation report; training reward and successful export are separate
+from walking quality. Data is generated online by the policy, with bounded
+samples retained for provenance.
+
 For code changes, follow [CONTRIBUTING.md](../CONTRIBUTING.md). Preserve prior runs and snapshots. Never obtain motion by teleporting the base, removing relevant contacts or relabelling a replay as a new simulation. User authorization and third-party asset terms still govern any external upload or publication.

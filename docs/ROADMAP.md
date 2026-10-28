@@ -16,6 +16,11 @@ Measure commanded versus achieved velocity, heading drift, foot slip, upright ti
 
 Evaluate learned locomotion alongside the current controller. Begin with a model and actuator audit, then a small training smoke run and measured resource cost. A candidate must improve the declared motion tests while retaining task cancellation, tail/arm coordination and expressions. Publish an evaluation with its model, observation/action layout, normalizer, control rate, checkpoint and exact run command when that work is ready.
 
+The [experimental training package](../training/README.md) now implements the
+own-body mjlab/RSL-RL workflow, online data collection, normalized ONNX export and
+independent CPU evaluation. It uses the separate VD32 physical candidate. Current
+optimization focuses on foot clearance, contact slip, heading and supported stops.
+
 MicroDuck's training/deployment workflow is a useful reference. Its existing policy is tied to a different body; adapting our character requires a matching controller or retraining. Body proportions, inertia, contact geometry and articulation stay part of the engineering problem. The current environment is Python 3.13; the referenced MicroDuck RL revision requires Python 3.12, so training exploration needs a separate environment.
 
 ## 3. Make conversation change what she does

@@ -10,6 +10,8 @@
 
 **简体中文** · [English](README.en.md) · [日本語](README.ja.md)
 
+**训练入口已开放：** [自身身体的 mjlab / PPO 训练与数据流程](training/README.md)，包含在线采样、检查点、ONNX 导出和独立 CPU 行走/停止评估。学习步态仍在优化；下方演示使用现有控制器。
+
 [完整演示](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [快速开始](#快速开始) · [路线图](#路线图) · [交给 Agent](#交给-agent) · [开发文档](docs/CHARACTER.md)
 
 [![DeepSeek Whale-chan Robot：DeepSeek 大肥鱼在 MuJoCo 中行走，鲸尾与手臂协调运动；原速仿真节选](docs/media/vd24/walk.gif)](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html)

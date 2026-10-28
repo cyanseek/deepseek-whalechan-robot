@@ -19,3 +19,13 @@ Do not commit secrets, personal data, local environments, installed assets or ra
 Motion metrics include independent contact-confirmed footfalls (3mm lift, 5mm forward travel, 30ms flight/landing). Preserve planner counters separately. Run tests/test_footsteps.py and native contact-walk tests after changing detection. tools/run_behavior_demo.py provides an offline external-client sequence; use a fresh output directory and inspect both client.json and native/run.json. A successful scripted demo uses the stated contact controller, not a learned policy or microphone input.
 
 VD35 adds opt-in feedback-driven routines, supported pause/resume and intent cancellation on VD29 via Start-WhaleChan-Behaviors.ps1. Read docs/BEHAVIORS.md. Resume restarts gestures/reacquires RGB targets; it never restores live state. Keep training weights separate until physically qualified. policy_bundle/check_policy_bundle bind model, home, engine version, joint order and control contract; experimental opt-in is not locomotion acceptance. Run tests/test_behaviors.py, tests/test_policy_bundle.py and a native external-client sequence; preserve failures and old inputs.
+
+VD39 adds the separate experimental training/ package; read training/README.md.
+It uses the VD32 dynamics candidate, mjlab1.3/RSL-RL5, 78 actor inputs/23 actions,
+50Hz policy/1kHz implicit motor control and independent MuJoCo3.10/ONNX evaluation.
+Run training/tests in its own Python3.12 environment, then a 64-world/5-update
+smoke, export and CPU evaluation for training/control changes. Do not install its
+physics dependencies into the character viewer environment. Keep checkpoints,
+raw runs and local credentials out of Git. Preserve all failure records locally;
+describe learned motion according to independent physical outcomes, separately
+from the existing character demos. No trained policy is installed by default.

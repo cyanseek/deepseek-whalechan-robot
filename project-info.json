@@ -165,6 +165,24 @@
         "supported pause/resume",
         "per-foot contact metrics"
       ]
+    },
+    "training": {
+      "document": "training/README.md",
+      "package": "training",
+      "status": "experimental",
+      "body": "VD32 dynamics candidate",
+      "actor_inputs": 78,
+      "actions": 23,
+      "policy_hz": 50,
+      "physics_hz": 1000,
+      "commands": [
+        "whalechan-train",
+        "whalechan-audit-data",
+        "whalechan-export",
+        "whalechan-evaluate"
+      ],
+      "data_source": "online policy interaction",
+      "default_policy_included": false
     }
   }
 }

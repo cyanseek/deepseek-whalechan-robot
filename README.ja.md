@@ -10,6 +10,8 @@ AI コンパニオンと人・ロボットのインタラクションを目指�
 
 [简体中文](README.md) · [English](README.en.md) · **日本語**
 
+**学習用ワークフローを公開：** [本体に合わせた mjlab / PPO 学習とデータ処理](training/README.md)。オンライン収集、チェックポイント、ONNX 出力、独立した CPU 歩行・停止評価を含みます。学習歩行は改善中で、以下のデモは既存のコントローラーを使用しています。
+
 [デモを見る](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [クイックスタート](#クイックスタート) · [ロードマップ](#ロードマップ) · [Agent 向け](#agent-向け) · [開発ガイド](docs/CHARACTER.md)
 
 [![DeepSeek Whale-chan Robot：MuJoCo 内で歩き、尾と腕を連動させる DeepSeek Whale-chan。物理シミュレーションの等速抜粋](docs/media/vd24/walk.gif)](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html)
