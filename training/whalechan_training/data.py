@@ -28,7 +28,9 @@ class CommandCoverage:
         self.counts = torch.zeros(
             (2, len(self.columns)), device=device, dtype=torch.float64
         )
-        self.terminations = torch.zeros((2, len(termination_names)), device=device)
+        self.terminations = torch.zeros(
+            (2, len(termination_names)), device=device, dtype=torch.int64
+        )
 
     def observe(
         self, command, next_command, reward, done, timeout, reset_actions, causes
@@ -84,7 +86,8 @@ class RecordedEnv(RslRlVecEnvWrapper):
         self.out = Path(out)
         self.calls = 0
         self.samples = []
-        self.stats = torch.zeros(7, device=self.device)
+        # Float32 counters lose unit increments after 2**24 transitions.
+        self.stats = torch.zeros(7, device=self.device, dtype=torch.int64)
         self.last = self.get_observations()
         self.coverage = CommandCoverage(
             self.num_envs,
