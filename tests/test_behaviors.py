@@ -70,3 +70,43 @@ def test_deadline_stops_and_discards_unfinished_routine(scene):
     c.deadline=float(d.time)+.1;advance(m,d,c,2)
     assert c.behavior_status=='timed_out' and c.status=='stopped'
     assert not c.plan and not c.saved
+
+
+def test_model_pause_preserves_remaining_routine_for_resume(scene):
+    release=threading.Event()
+    def delayed(text):
+        release.wait(10);return {'task':command_task('停一下'),'mode':'delayed_test_fixture'}
+    m,d,c=runtime(scene,delayed)
+    try:
+        advance(m,d,c,3);c.submit('打个招呼',float(d.time));advance(m,d,c,.5)
+        c.submit('稍等，先别动了',float(d.time));advance(m,d,c,.1)
+        assert not c.behavior_state()['can_resume']
+        release.set();end=time.perf_counter()+2
+        while c.pending and time.perf_counter()<end:c.poll(float(d.time));time.sleep(.001)
+        advance(m,d,c,2)
+        assert c.status=='stopped' and c.behavior_status=='paused'
+        assert c.saved==['wave','tail','nod']
+        c.submit('继续',float(d.time));advance(m,d,c,18)
+        assert c.behavior_status=='complete' and not c.saved
+        assert [e['token'] for e in c.events if e['event']=='sequence_step_completed']==['wave','tail','nod']
+    finally:release.set();c.close()
+
+
+@pytest.mark.parametrize('replacement', ['点头', '取消任务'])
+def test_stale_model_pause_cannot_restore_replaced_routine(scene,replacement):
+    release=threading.Event()
+    def delayed(text):
+        release.wait(10);return {'task':command_task('停一下'),'mode':'delayed_test_fixture'}
+    m,d,c=runtime(scene,delayed)
+    try:
+        advance(m,d,c,3);c.submit('打个招呼',float(d.time));advance(m,d,c,.5)
+        c.submit('稍等，先别动了',float(d.time));advance(m,d,c,.1)
+        if replacement=='点头':c.submit_sequence(['nod'],float(d.time))
+        else:c.submit(replacement,float(d.time))
+        release.set();end=time.perf_counter()+2
+        while c.pending and time.perf_counter()<end:c.poll(float(d.time));time.sleep(.001)
+        advance(m,d,c,5)
+        assert not c.saved and not c.behavior_state()['can_resume']
+        assert any(e['event']=='stale_response_rejected' for e in c.events)
+        assert [e['token'] for e in c.events if e['event']=='sequence_step_completed']==(['nod'] if replacement=='点头' else [])
+    finally:release.set();c.close()

@@ -14,7 +14,11 @@ Run a complete 46-second walk → pause → resume → wave/tail/nod sequence wi
 
 The offline demo needs the character assets and `requirements-contact.txt`. It records the native video and physical measurements in `native/`, and the inputs/outcome in `client.json`. A fresh output directory is required. Simulation time and elapsed wall time are recorded separately. The interactive panel accepts your own text inputs instead of this prescribed test schedule.
 
-The panel adds **打个招呼** (wave → tail → nod), **看看左右**, **继续**, and **取消任务**. “停一下” requests supported stopping and retains remaining intentions. “继续” reacquires an approach target or restarts the interrupted gesture from its beginning after settling. “取消任务” discards future actions. A new ordinary instruction replaces both active and paused intentions.
+The panel adds **打个招呼** (wave → tail → nod), **看看左右**, **继续**, and **取消任务**. “停一下” requests supported stopping and retains remaining intentions. “继续” reacquires an approach target or restarts the interrupted gesture from its beginning after settling. “取消任务” discards future actions. A new motion or chat instruction replaces both active and paused intentions.
+
+With the DeepSeek backend, a request interpreted as `stop` also retains the interrupted intentions for “继续”. They become resumable after that interpretation is accepted; a different accepted action replaces them. Cancelled or superseded model replies cannot restore an old routine. This preserves task intent while physical stopping still follows measured support.
+
+使用 DeepSeek 时，被解析为 `stop` 的自然语言（例如“稍等，先别动了”）同样保留未完成任务，解析结果生效后可用“继续”恢复。解析成其他动作则替换旧任务；已取消或过期的回复不能恢复旧任务。是否已经停稳仍以身体反馈为准。
 
 组合动作按实际完成反馈推进，不按固定播放时长切换。每项动作有仿真时间上限：接近60秒、手势20秒；超时收步并清空任务，不自动重试。停止不是硬件急停或断电。接近仍使用机器人RGB相机中的颜色标记，不是声音定位。最大6项，支持情况由当前身体控制器决定。
 

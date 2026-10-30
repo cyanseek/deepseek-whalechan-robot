@@ -18,6 +18,7 @@ class BehaviorController(InteractionController):
         self.plan = []
         self.cursor = 0
         self.saved = []
+        self._pending_resume = []
         self.active_token = None
         self.deadline = None
         self.behavior_status = 'idle'
@@ -47,6 +48,7 @@ class BehaviorController(InteractionController):
 
     def submit_sequence(self, actions, now, source='structured_sequence'):
         plan = self._validate(actions)  # Reject atomically before touching current motion.
+        self._pending_resume = []
         self.plan, self.cursor, self.saved = plan, 0, []
         self.event(now, 'sequence_received', actions=plan, source=source)
         self._launch(now)
@@ -57,6 +59,11 @@ class BehaviorController(InteractionController):
         if accepted:
             self.active_token = (task['action'] + (':' + task['target'] if task['action'] == 'approach' else '')) if self.action else None
             self.deadline = now + (60 if self.action == 'approach' else 20) if self.action else None
+            if task['action'] == 'stop':
+                self.saved = self._pending_resume.copy()
+                self.behavior_status = 'paused' if self.saved else 'idle'
+                self.event(now, 'sequence_paused', remaining=self.saved.copy())
+            self._pending_resume = []
         return accepted
 
     def submit(self, text, now, source='text_entry'):
@@ -75,12 +82,14 @@ class BehaviorController(InteractionController):
         if word in ROUTINES:
             return self.submit_sequence(ROUTINES[word], now, source='named_routine')
         if word in ('取消', '取消任务', 'cancel'):
+            self._pending_resume = []
             self.plan, self.saved, self.active_token, self.deadline = [], [], None, None
             generation = super().submit('停一下', now, source)
             self.behavior_status = 'cancelled'
             self.event(now, 'sequence_cancelled')
             return generation
         if word in STOP_WORDS:
+            self._pending_resume = []
             remaining = self.plan[self.cursor:] if self.plan else ([self.active_token] if self.active_token else self.saved)
             self.saved = list(remaining)
             self.plan, self.active_token, self.deadline = [], None, None
@@ -88,7 +97,9 @@ class BehaviorController(InteractionController):
             self.behavior_status = 'paused' if self.saved else 'idle'
             self.event(now, 'sequence_paused', remaining=self.saved)
             return generation
-        # A new instruction replaces both active and paused intentions.
+        # Keep interrupted intentions until the model distinguishes pause from replacement.
+        self._pending_resume = list(self.plan[self.cursor:] if self.plan else
+                                    ([self.active_token] if self.active_token else self.saved))
         self.plan, self.saved, self.active_token, self.deadline = [], [], None, None
         self.behavior_status = 'single'
         return super().submit(text, now, source)
@@ -101,6 +112,7 @@ class BehaviorController(InteractionController):
             self.event(now, 'behavior_timeout')
         command = super().tick(detections, now)
         if self.low.phase == 'failed' or self.status in ('lost', 'model_error'):
+            self._pending_resume = []
             self.plan, self.saved, self.active_token, self.deadline = [], [], None, None
             self.behavior_status = 'failed'
         elif self.plan and self.status in ('complete', 'arrived'):
