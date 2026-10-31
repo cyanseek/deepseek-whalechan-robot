@@ -16,6 +16,9 @@ jobs:
           cache: pip
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest -q tests/test_character_asset_install.py tests/test_tasks.py tests/test_footsteps.py tests/test_policy_bundle.py
+      # Transport/history checks need no provider key or character assets.
+      # The cancelled-response physics scenario also runs locally with the assets installed.
+      - run: python -m pytest -q tests/test_persona.py -k "not cancelled_response"
   training-contract:
     runs-on: ubuntu-latest
     steps:

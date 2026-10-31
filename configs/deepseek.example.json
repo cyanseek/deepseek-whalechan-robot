@@ -3,5 +3,7 @@
   "model": "deepseek-flash",
   "api_key": "",
   "timeout_s": 15,
-  "max_tokens": 180
+  "max_tokens": 180,
+  "temperature": 0.65,
+  "history_turns": 4
 }

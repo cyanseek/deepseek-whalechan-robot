@@ -39,7 +39,11 @@ For explicit offline commands, use `--backend commands`, or PowerShell `-Backend
 
 Every new input cancels the previous request. A generation counter rejects model replies belonging to cancelled inputs. Common exact stop phrases bypass the API. Language requests run in at most two background workers; only the simulation thread writes actuator targets. New gestures wait for measured support, and completion messages follow controller feedback. Request cancellation is distinct from a supported physical stop and from a hardware emergency stop.
 
-Default idle expression is an open-eyed smile. Thinking and physical gestures change expression; completion briefly celebrates before returning to idle.
+Default idle expression is an open-eyed smile. Thinking and physical gestures change expression; completion briefly celebrates before returning to idle. Chat wording follows the [Whale-chan persona](PERSONA.md); it does not itself generate an emotion label or control joints.
+
+The DeepSeek client carries the last four accepted conversation turns in memory. Cancelled or stale replies are excluded. Each request includes the current controller's supported actions and its state at submission; a previous promise is not physical completion. History is per running client, cleared on restart, and is not loaded from recordings. Set `history_turns` to `0` to disable it (maximum `12`); `temperature` defaults to `0.65` and accepts `0`–`1`. Existing private configuration files remain usable without edits.
+
+Responses must still match the three-field intent schema. One bounded format retry is allowed for malformed responses; HTTP/connection failures are reported without automatic retries or switching providers. A model reply can be linguistically imperfect even when its schema is valid. Exact stop commands continue to bypass inference.
 
 ## Local adapter contract
 
@@ -60,7 +64,7 @@ The response is `202 {"status":"queued"}`. This acknowledges input queuing, not 
 
 The 2026-10-22 native integration check used a separate automated text client through this HTTP interface and a real DeepSeek API. It exercised approach → walking cancellation → wave → tail cancellation → completed tail → cancellation while inference was pending → rejected stale reply → approach and supported arrival → wave. Recordings are native physics, with a separate director camera and robot RGB inset. This is text interaction; microphone input and speech output are future adapters.
 
-The controller still uses ideal simulated proprioception and marker-based perception on flat ground. Multi-turn memory, compound-task planning, learned locomotion and hardware validation are separate work. The new interaction layer does not change the VD24 mass, collision geometry, actuator limits or low-hop capability.
+The controller still uses ideal simulated proprioception and marker-based perception on flat ground. Persistent memory, model-generated compound-task planning, learned locomotion integration and hardware validation are separate work. The interaction layer does not change the VD24 mass, collision geometry, actuator limits or low-hop capability.
 
 ## References
 

@@ -16,7 +16,7 @@ def main():
     root=tk.Tk();root.title('鲸鱼娘 · '+args.profile+' 具身仿真交互');root.geometry('1100x790')
     picture=ttk.Label(root);picture.pack(fill='both',expand=True)
     status=tk.StringVar(value='连接仿真中…');ttk.Label(root,textvariable=status,font=('Microsoft YaHei',11)).pack(anchor='w',padx=15)
-    reply=tk.StringVar();ttk.Label(root,textvariable=reply,font=('Microsoft YaHei',11)).pack(anchor='w',padx=15)
+    reply=tk.StringVar();ttk.Label(root,textvariable=reply,font=('Microsoft YaHei',11),wraplength=1050,justify='left').pack(anchor='w',padx=15)
     row=ttk.Frame(root);row.pack(fill='x',padx=15,pady=10)
     text=tk.StringVar();entry=ttk.Entry(row,textvariable=text,font=('Microsoft YaHei',12));entry.pack(side='left',fill='x',expand=True)
     jobs=queue.Queue();updates=queue.Queue(maxsize=2);closed=threading.Event()

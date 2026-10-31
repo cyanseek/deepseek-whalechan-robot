@@ -217,12 +217,15 @@ def main():
                 camera.lookat[:]=[d.qpos[0]+.01,d.qpos[1],.19]
                 renderer.update_scene(d,camera=camera,scene_option=option)
                 frame=Image.fromarray(renderer.render());draw=ImageDraw.Draw(frame)
-                draw.rectangle((0,0,1280,125),fill=(20,29,43))
+                reply_lines = [interaction.reply[i:i+56] for i in range(0,len(interaction.reply),56)] or ['']
+                status_y = 69 + 25*len(reply_lines)
+                draw.rectangle((0,0,1280,status_y+26),fill=(20,29,43))
                 mode='DeepSeek API' if args.backend=='deepseek' else '离线明确指令'
                 draw.text((20,8),f'DeepSeek Whale-chan Robot · {args.profile} | {mode} · 真实物理仿真',font=font,fill='white')
                 draw.text((20,39),'输入：'+interaction.text[:48],font=font,fill=(150,220,255))
-                draw.text((20,69),'回应：'+interaction.reply[:48],font=font,fill='white')
-                draw.text((20,99),f'{names.get(interaction.status,interaction.status)} · {low.phase} | 模拟 {now:.2f}s / 实际 {time.perf_counter()-wall0:.2f}s',font=small,fill=(160,215,230))
+                for index, line in enumerate(reply_lines):
+                    draw.text((20,69+25*index),('回应：' if index==0 else '　　　')+line,font=font,fill='white')
+                draw.text((20,status_y),f'{names.get(interaction.status,interaction.status)} · {low.phase} | 模拟 {now:.2f}s / 实际 {time.perf_counter()-wall0:.2f}s',font=small,fill=(160,215,230))
                 frame.paste(Image.fromarray(rgb),(944,460));draw.rectangle((944,430,1264,460),fill=(20,29,43))
                 draw.text((950,434),'机器人相机：过来 = 红色标记',font=small,fill='white')
                 if foot_renderer:
