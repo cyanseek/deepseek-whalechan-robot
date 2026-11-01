@@ -22,6 +22,10 @@ These are sample inputs, not canned replies. Every new input still interrupts th
 
 `PERSONA` and `SYSTEM` in `src/opendafeiyu/dialogue.py` define character voice and the separate action contract. `temperature` (default `0.65`) controls response variety; `history_turns` (default `4`, range `0`–`12`) bounds in-memory context. The client only remembers replies accepted by the simulation thread, and never commits cancelled worker responses to history. Restarting clears this context; local run recordings remain under the existing recording policy.
 
+点击面板的“新对话”，或发送完整指令 `新对话` / `清空对话` / `new chat`，即可清空当前聊天上下文并取消旧任务，包括暂停待续的动作。角色保留默认人设，身体按原有方式收步；迟到的旧回复不会恢复记忆或动作。已有录像与运行记录保留，已经发给服务商的请求无法撤回。
+
+The **新对话** button and these exact commands clear the current context locally and cancel old tasks, including paused intentions. The persona remains active while the body settles. Late replies cannot repopulate memory or restart motion. Existing recordings are retained; requests already sent to the provider cannot be recalled.
+
 The model receives supported actions and a snapshot of the current controller state, not joint control or arbitrary tools. It has no real-world camera, microphone, screen access or long-term personal memory. Expressions remain driven by the existing thinking/gesture/completion states; conversation does not introduce new facial hardware or a learned whole-body controller.
 
 Schema/action tests measure engineering behavior. Humor, tact and factual correctness still require reading actual replies; a successful JSON parse is not a personality score.

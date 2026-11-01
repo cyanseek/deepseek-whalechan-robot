@@ -1,5 +1,5 @@
 """Feedback-driven behavior composition; only InteractionController owns motion."""
-from .dialogue import InteractionController, normalized, STOP_WORDS, HEAD_ACTIONS
+from .dialogue import InteractionController, normalized, STOP_WORDS, HEAD_ACTIONS, NEW_CHAT_WORDS
 
 LABELS = {'wave': '挥手', 'tail': '摆尾', 'nod': '点头', 'shake': '摇头',
           'look_left': '向左看', 'look_right': '向右看', 'approach:red': '过来',
@@ -81,11 +81,11 @@ class BehaviorController(InteractionController):
             return self.generation
         if word in ROUTINES:
             return self.submit_sequence(ROUTINES[word], now, source='named_routine')
-        if word in ('取消', '取消任务', 'cancel'):
+        if word in ('取消', '取消任务', 'cancel') or word in NEW_CHAT_WORDS:
             self._pending_resume = []
             self.plan, self.saved, self.active_token, self.deadline = [], [], None, None
-            generation = super().submit('停一下', now, source)
-            self.behavior_status = 'cancelled'
+            generation = super().submit(text if word in NEW_CHAT_WORDS else '停一下', now, source)
+            self.behavior_status = 'idle' if word in NEW_CHAT_WORDS else 'cancelled'
             self.event(now, 'sequence_cancelled')
             return generation
         if word in STOP_WORDS:

@@ -24,6 +24,7 @@ def main():
         value=value if value is not None else text.get()
         if value.strip():jobs.put(value);text.set('')
     ttk.Button(row,text='发送',command=send).pack(side='left',padx=6);entry.bind('<Return>',lambda e:send())
+    ttk.Button(row,text='新对话',command=lambda:send('新对话')).pack(side='left',padx=6)
     buttons=ttk.Frame(root);buttons.pack(fill='x',padx=15,pady=8)
     for label,value in [('过来（红色标记）','过来'),('挥手','挥手'),('摆尾','摆尾'),('停一下','停一下')]+([('小跳','跳一下')] if args.profile=='VD26' else []):
         ttk.Button(buttons,text=label,command=lambda v=value:send(v)).pack(side='left',padx=5)
@@ -36,6 +37,7 @@ def main():
         for word in ('打个招呼','看看左右','继续','取消任务'):
             ttk.Button(routines,text=word,command=lambda v=word:send(v)).pack(side='left',padx=5)
     ttk.Label(root,text='“过来”使用相机可见红标记。停止会完成收步；运行结束后自动关闭面板。').pack(anchor='w',padx=15,pady=5)
+    ttk.Label(root,text='“新对话”清空本次聊天上下文并取消旧任务；已有运行记录保留。').pack(anchor='w',padx=15)
     def worker():
         while not closed.is_set():
             try:

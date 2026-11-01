@@ -43,6 +43,8 @@ Default idle expression is an open-eyed smile. Thinking and physical gestures ch
 
 The DeepSeek client carries the last four accepted conversation turns in memory. Cancelled or stale replies are excluded. Each request includes the current controller's supported actions and its state at submission; a previous promise is not physical completion. History is per running client, cleared on restart, and is not loaded from recordings. Set `history_turns` to `0` to disable it (maximum `12`); `temperature` defaults to `0.65` and accepts `0`–`1`. Existing private configuration files remain usable without edits.
 
+Click **新对话** in the panel, or send the exact command `新对话`, `清空对话` or `new chat`, to start with empty conversation context. This runs locally without an API call, requests a supported stop and cancels queued requests and resumable behavior intentions. Replies from earlier requests are rejected even if they arrive later. The character persona stays active. Existing recordings remain on disk, and requests already sent to the provider cannot be recalled. The same command works through `/command` as `{"text":"新对话"}`.
+
 Responses must still match the three-field intent schema. One bounded format retry is allowed for malformed responses; HTTP/connection failures are reported without automatic retries or switching providers. A model reply can be linguistically imperfect even when its schema is valid. Exact stop commands continue to bypass inference.
 
 ## Local adapter contract

@@ -1,9 +1,10 @@
 """Conversation transport and history checks; no real provider or credentials."""
 import json
 import threading
+from types import SimpleNamespace
 import urllib.error
 import pytest
-from opendafeiyu.dialogue import DeepSeekClient, command_task, validate_task
+from opendafeiyu.dialogue import DeepSeekClient, InteractionController, command_task, validate_task
 from test_dialogue import built, runtime, advance
 
 
@@ -99,6 +100,59 @@ def test_invalid_input_does_not_call_provider(tmp_path, monkeypatch, text):
 
 def test_empty_reply_is_not_accepted():
     with pytest.raises(ValueError): validate_task({'action': 'talk', 'target': 'none', 'reply': ' '})
+
+
+@pytest.mark.parametrize('command', ['新对话', '清空对话', 'New chat!'])
+def test_new_conversation_discards_inflight_and_queued_history(tmp_path, monkeypatch, command):
+    provider = client(tmp_path)
+    provider.remember('我喜欢草莓', command_task('你好'))
+    started, release = threading.Event(), threading.Event()
+    sent = []
+    def request(messages):
+        sent.append(messages)
+        if messages[-1]['content'] == '旧请求':
+            started.set(); release.wait(5)
+            return answer(command_task('摆尾'))
+        return answer()
+    monkeypatch.setattr(provider, '_request', request)
+    low = SimpleNamespace(phase='ready', contacts=lambda: (True, True), cancel=lambda: None)
+    control = InteractionController(low, provider)
+    try:
+        control.submit('旧请求', 0); control.poll(0)
+        assert started.wait(2)
+        old_future = control.pending[0][1]
+        control.submit('尚未发送的请求', .1)
+        control.submit(command, .2)
+        assert not provider._history and control.queued is None and control.action is None
+        assert control.stop_requested == .2
+        release.set(); old_future.result(timeout=2); control.poll(.3)
+        assert not provider._history and control.action is None
+        assert any(e['event'] == 'stale_response_rejected' for e in control.events)
+        control.submit('新的问候', .4); control.poll(.4)
+        control.pending[0][1].result(timeout=2); control.poll(.5)
+        assert len(sent) == 2
+        assert [m['content'] for m in sent[-1] if m['role'] != 'system'] == ['新的问候']
+        assert '主人' in sent[-1][0]['content']
+        assert provider._history[0]['content'] == '新的问候'
+        assert any(e['event'] == 'conversation_cleared' for e in control.events)
+    finally:
+        release.set(); control.close()
+
+
+@pytest.mark.parametrize('text', ['不要清空对话', '请解释“新对话”是什么意思'])
+def test_mentioning_new_conversation_preserves_history(tmp_path, monkeypatch, text):
+    provider = client(tmp_path)
+    provider.remember('我喜欢草莓', command_task('你好'))
+    sent = []
+    monkeypatch.setattr(provider, '_request', lambda messages: sent.append(messages) or answer())
+    low = SimpleNamespace(phase='ready', contacts=lambda: (True, True), cancel=lambda: None)
+    control = InteractionController(low, provider)
+    try:
+        control.submit(text, 0); control.poll(0)
+        control.pending[0][1].result(timeout=2); control.poll(.1)
+        assert [m['content'] for m in sent[0] if m['role'] == 'user'] == ['我喜欢草莓', text]
+        assert not any(e['event'] == 'conversation_cleared' for e in control.events)
+    finally: control.close()
 
 
 def test_cancelled_response_never_enters_conversation_memory(built):

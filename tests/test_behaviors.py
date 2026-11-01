@@ -42,6 +42,44 @@ def test_cancel_clears_future_steps_and_resume_does_not_restart(scene):
     assert c.status=='stopped' and not c.plan and not c.saved
     assert not any(e['event']=='sequence_step_completed' for e in c.events)
 
+@pytest.mark.parametrize('when', ['running', 'paused', 'model_pending'])
+def test_new_conversation_cannot_resume_old_behavior(scene, when):
+    started, release = threading.Event(), threading.Event()
+    class Translator:
+        def __init__(self): self.history = ['previous conversation']
+        def __call__(self, text):
+            started.set(); release.wait(10)
+            return {'task': command_task('停一下'), 'mode': 'delayed_test_fixture'}
+        def clear_history(self): self.history.clear()
+    translator = Translator()
+    m,d,c = runtime(scene,translator)
+    try:
+        advance(m,d,c,3)
+        c.submit_sequence(['tail','nod'],float(d.time)); advance(m,d,c,1)
+        old_future = None
+        if when == 'paused':
+            c.submit('停一下',float(d.time)); advance(m,d,c,2)
+            assert c.saved
+        elif when == 'model_pending':
+            c.submit('稍等，我还没准备好',float(d.time)); c.poll(float(d.time))
+            assert started.wait(2) and c._pending_resume
+            old_future = c.pending[0][1]
+        c.submit('新对话',float(d.time))
+        assert not translator.history and not c.plan and not c.saved and not c._pending_resume
+        release.set()
+        if old_future: old_future.result(timeout=2)
+        c.poll(float(d.time))
+        c.submit('继续',float(d.time)); advance(m,d,c,3)
+        assert c.low.phase == 'ready' and c.stop_requested is None and all(c.low.contacts())
+        assert c.action is None and not c.behavior_state()['can_resume']
+        assert not any(e['event'] == 'sequence_step_completed' for e in c.events)
+        assert any(e['event'] == 'supported_stop' for e in c.events)
+        c.submit_sequence(['nod'],float(d.time)); advance(m,d,c,5)
+        assert c.behavior_status == 'complete'
+    finally:
+        release.set(); c.close()
+
+
 def test_invalid_sequence_is_atomic_and_new_intent_replaces_saved(scene):
     m,d,c=runtime(scene);advance(m,d,c,3);c.submit_sequence(['wave','tail'],float(d.time))
     generation=c.generation

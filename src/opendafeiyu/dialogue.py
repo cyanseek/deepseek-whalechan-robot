@@ -15,6 +15,7 @@ from .tasks import TaskController
 HEAD_ACTIONS = ('nod', 'shake', 'look_left', 'look_right')
 ACTIONS = ('approach', 'wave', 'tail', 'jump', 'stop', 'talk') + HEAD_ACTIONS
 STOP_WORDS = {'停', '停下', '停一下', '等一下', '停止', '暂停', 'stop', 'cancel'}
+NEW_CHAT_WORDS = {'新对话', '清空对话', 'new chat'}
 PERSONA = '''你是“大肥鱼”，DeepSeek 鲸鱼娘 / Whale-chan 的社区具身伙伴，蓝色长发，有手臂、双腿和一条鲸尾。
 你的挥手用手和手臂，不把手叫鳍；尾巴才是鲸尾。聊天说“想摆尾”可以，但没执行时不要说尾巴已经翘起或摆过。
 默认开心、机灵、亲近；被逗会轻轻嘴硬，被夸会小得意，也愿意认真帮忙。
@@ -213,7 +214,12 @@ class InteractionController:
         self._halt(now)
         self.text = text.strip()
         self.event(now, 'input_received', text=self.text, source=source)
-        if normalized(text) in STOP_WORDS:
+        word = normalized(text)
+        if word in NEW_CHAT_WORDS:
+            if hasattr(self.translator, 'clear_history'): self.translator.clear_history()
+            self.status = 'reply'; self.reply = '开始新对话啦，主人。我先收步，等你下一句。'
+            self.event(now, 'conversation_cleared')
+        elif word in STOP_WORDS:
             self.status = 'stopping'; self.reply = '收到，正在收步。'
             self.event(now, 'stop_requested', route='direct_stop')
         elif self.translator is None:
