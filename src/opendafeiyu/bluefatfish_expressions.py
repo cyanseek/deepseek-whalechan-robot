@@ -132,7 +132,8 @@ class Expressions:
         if any(k not in self.deltas for k in weights): raise ValueError('Unknown expression')
         self.weights = {k:float(np.clip(v,0,1)) for k,v in weights.items() if v>0}
         self.model.skin_vert[:] = self.neutral
-        for k,v in self.weights.items(): self.model.skin_vert[:] += v*self.deltas[k]
+        # Semantic transitions may rebuild the mapping in a different order.
+        for k in sorted(self.weights): self.model.skin_vert[:] += self.weights[k]*self.deltas[k]
 
     def update(self, time, emotion='neutral', talking=False):
         # The source 'relaxed' is a comic replacement eye: its intermediate

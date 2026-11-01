@@ -30,13 +30,25 @@ def test_new_clothing_preserves_original_physics_and_has_normalized_skin_weights
 
 def test_default_smile_preserves_open_eye_shape_and_blends_smoothly(built):
     m,_,a,_=built;face=CheerfulExpressions(m,mapping=a['expression-cutout-map.npz'])
-    face.update(2,'neutral');assert face.weights['smile']==pytest.approx(.7)
-    eye=face.neutral[:,2]>.222
-    np.testing.assert_array_equal(face.deltas['smile'][eye],0.)
-    before=m.skin_vert.copy();face.update(2.01,'happy');np.testing.assert_allclose(m.skin_vert,before,atol=1e-8)
-    face.update(2.30,'happy');assert face.weights['happy']==pytest.approx(.85)
-    assert face.weights.get('smile',0)<1e-5
-    m.skin_vert[:]=face.neutral
+    try:
+        face.update(2,'neutral');assert face.weights['smile']==pytest.approx(.7)
+        eye=face.neutral[:,2]>.222
+        np.testing.assert_array_equal(face.deltas['smile'][eye],0.)
+        before=m.skin_vert.copy();face.update(2.01,'happy');np.testing.assert_allclose(m.skin_vert,before,atol=1e-8)
+        face.update(2.30,'happy');assert face.weights['happy']==pytest.approx(.85)
+        assert face.weights.get('smile',0)<1e-5
+    finally:
+        m.skin_vert[:]=face.neutral
+
+
+def test_expression_weights_are_independent_of_mapping_order(built):
+    m,_,a,_=built;face=CheerfulExpressions(m,mapping=a['expression-cutout-map.npz'])
+    try:
+        face.apply({'happy':.1,'smile':.7});before=m.skin_vert.copy()
+        face.apply({'smile':.7,'happy':.1})
+        np.testing.assert_array_equal(m.skin_vert,before)
+    finally:
+        m.skin_vert[:]=face.neutral
 
 def test_closed_expression_returns_to_neutral_without_missing_zero_weight(built):
     m,_,a,_=built;face=CheerfulExpressions(m,mapping=a['expression-cutout-map.npz'])
