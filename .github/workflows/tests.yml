@@ -19,6 +19,7 @@ jobs:
       # Transport/history checks need no provider key or character assets.
       # The cancelled-response physics scenario also runs locally with the assets installed.
       - run: python -m pytest -q tests/test_persona.py -k "not cancelled_response"
+      - run: python -m pytest -q tests/test_behavior_interruptions.py
   training-contract:
     runs-on: ubuntu-latest
     steps:

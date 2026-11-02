@@ -130,6 +130,34 @@ def test_model_pause_preserves_remaining_routine_for_resume(scene):
     finally:release.set();c.close()
 
 
+@pytest.mark.parametrize('followup', ['停一下', '再等我一会'])
+def test_pause_while_model_pending_stops_and_resumes_physically(scene,followup):
+    release,started=threading.Event(),threading.Event()
+    def delayed(text):
+        if text=='稍等，先别动了':
+            started.set();release.wait(20)
+            return {'task':command_task('摆尾'),'mode':'delayed_test_fixture'}
+        return {'task':command_task('停一下'),'mode':'test_fixture'}
+    m,d,c=runtime(scene,delayed)
+    try:
+        advance(m,d,c,3);c.submit_sequence(['tail','nod'],float(d.time));advance(m,d,c,.5)
+        c.submit('稍等，先别动了',float(d.time));c.poll(float(d.time))
+        assert started.wait(2)
+        stale=c.pending[0][1]
+        c.submit(followup,float(d.time));c.poll(float(d.time))
+        if followup!='停一下':
+            c.pending[-1][1].result(timeout=2);c.poll(float(d.time))
+        advance(m,d,c,2)
+        assert c.status=='stopped' and c.saved==['tail','nod'] and all(c.low.contacts())
+        release.set();stale.result(timeout=2);c.poll(float(d.time))
+        assert c.action is None and c.saved==['tail','nod']
+        c.submit('继续',float(d.time));advance(m,d,c,12)
+        assert c.behavior_status=='complete' and c.low.phase=='ready' and all(c.low.contacts())
+        assert [e['token'] for e in c.events if e['event']=='sequence_step_completed']==['tail','nod']
+        assert any(e['event']=='stale_response_rejected' for e in c.events)
+    finally:release.set();c.close()
+
+
 @pytest.mark.parametrize('replacement', ['点头', '取消任务'])
 def test_stale_model_pause_cannot_restore_replaced_routine(scene,replacement):
     release=threading.Event()

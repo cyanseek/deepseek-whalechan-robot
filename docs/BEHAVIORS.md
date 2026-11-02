@@ -20,6 +20,10 @@ With the DeepSeek backend, a request interpreted as `stop` also retains the inte
 
 使用 DeepSeek 时，被解析为 `stop` 的自然语言（例如“稍等，先别动了”）同样保留未完成任务，解析结果生效后可用“继续”恢复。解析成其他动作则替换旧任务；已取消或过期的回复不能恢复旧任务。是否已经停稳仍以身体反馈为准。
 
+While an interpretation is pending, an explicit “停一下” stops directly and preserves the interrupted task for “继续”. Repeated pause requests keep that same task; a later accepted replacement, cancellation or new conversation discards it.
+
+模型还在理解时，点击“停一下”会直接收步，并保留被打断的任务供“继续”恢复。连续暂停不会丢失该任务；后续确认的新指令、“取消任务”或“新对话”会清除它。
+
 组合动作按实际完成反馈推进，不按固定播放时长切换。每项动作有仿真时间上限：接近60秒、手势20秒；超时收步并清空任务，不自动重试。停止不是硬件急停或断电。接近仍使用机器人RGB相机中的颜色标记，不是声音定位。最大6项，支持情况由当前身体控制器决定。
 
 The opt-in runner accepts `POST /sequence` with `{"actions":["wave","tail","nod"]}` in addition to `/command`. Invalid or unsupported actions are rejected before changing the current plan. `/state` includes `behavior.remaining`, `paused_actions`, `can_resume` and the current deadline. Events and source snapshots remain in each fresh run directory. No raw joints or executable commands are accepted.

@@ -89,9 +89,10 @@ class BehaviorController(InteractionController):
             self.event(now, 'sequence_cancelled')
             return generation
         if word in STOP_WORDS:
-            self._pending_resume = []
-            remaining = self.plan[self.cursor:] if self.plan else ([self.active_token] if self.active_token else self.saved)
+            remaining = self.plan[self.cursor:] if self.plan else (
+                [self.active_token] if self.active_token else self.saved or self._pending_resume)
             self.saved = list(remaining)
+            self._pending_resume = []
             self.plan, self.active_token, self.deadline = [], None, None
             generation = super().submit(text, now, source)
             self.behavior_status = 'paused' if self.saved else 'idle'
@@ -99,7 +100,7 @@ class BehaviorController(InteractionController):
             return generation
         # Keep interrupted intentions until the model distinguishes pause from replacement.
         self._pending_resume = list(self.plan[self.cursor:] if self.plan else
-                                    ([self.active_token] if self.active_token else self.saved))
+                                    ([self.active_token] if self.active_token else self.saved or self._pending_resume))
         self.plan, self.saved, self.active_token, self.deadline = [], [], None, None
         self.behavior_status = 'single'
         return super().submit(text, now, source)
