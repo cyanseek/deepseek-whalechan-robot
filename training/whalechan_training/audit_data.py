@@ -18,11 +18,14 @@ def audit(run: Path) -> dict:
             if data[name].shape[-1] != size:
                 errors.append("dimension:" + name)
         command = data["actor"][..., -3:]
-        walking = command[..., 0] > 0.005
+        standing = (command == 0).all(axis=-1)
+        forward_only = (command[..., 1:] == 0).all(axis=-1)
+        in_range = (command[..., 0] >= 0.025) & (command[..., 0] <= 0.08)
+        walking = forward_only & in_range
         speeds = command[..., 0][walking]
-        if np.any(command[..., 1:] != 0):
+        if np.any(~forward_only):
             errors.append("non-forward command")
-        if np.any((speeds < 0.025) | (speeds > 0.08)):
+        if np.any((command[..., 0] != 0) & ~in_range):
             errors.append("command range")
         if not np.allclose(
             np.clip(data["action_sampled"], -3, 3), data["action_applied"]
@@ -33,7 +36,8 @@ def audit(run: Path) -> dict:
         result = {
             "sampled_transitions": int(np.prod(data["actor"].shape[:-1])),
             "total_transitions": int(stats["transitions"]),
-            "sampled_zero_fraction": float((~walking).mean()),
+            "sampled_zero_fraction": float(standing.mean()),
+            "sampled_invalid_command_count": int((~(standing | walking)).sum()),
             "whole_run_zero_fraction": stats["zero_command"] / stats["transitions"],
             "sampled_forward_range": [float(speeds.min()), float(speeds.max())]
             if speeds.size

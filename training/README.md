@@ -101,6 +101,17 @@ is the framework's reset observation. The audit checks integrity and reports
 observed coverage; the configured standing probability is not a guarantee of
 the fraction of surviving training transitions.
 
+The sample audit accepts exact-zero commands or forward commands within
+0.025–0.08 m/s with zero lateral/yaw components. `sampled_zero_fraction`
+counts only exact-zero commands; `sampled_invalid_command_count` reports
+samples outside that contract. `sampled_forward_range` uses valid forward
+samples. The whole-run fraction remains the recorder's standing count; the
+audit does not rewrite retained data or whole-run counters.
+
+样本审计将全零指令与有效前进指令分开统计；倒退、过小的非零速度、横移或转向
+不会被算作站立。`sampled_invalid_command_count` 给出不符合当前训练指令范围的
+样本数；原始样本和整轮训练计数保持不变。
+
 ## Evaluate the motion
 
 Confirmed steps require ≥3 mm whole-sole clearance, ≥5 mm forward travel and
