@@ -120,6 +120,18 @@ speed <8 mm/s, angular speed <0.2 rad/s and tilt <12° for 0.5 s. The default
 20-second evaluation also checks alternating steps, net displacement, slip and
 heading. These are development criteria for this flat-ground body.
 
+`report.json.stop_windows` adds diagnostics for the 8–11 s and 17–20 s stop
+windows: net and peak horizontal root displacement since the stop command,
+plus horizontal/angular speed at the last observed state. `complete` means
+the full window was recorded, not that the robot stopped successfully. Early
+termination leaves a partial window; missing boundary data gives `null` drift.
+Displacements are sampled at 50 Hz in world XY, independently of walking foot
+slip. These fields do not change `stops` or `qualified`.
+
+停止窗口同时报告下令后的身体净漂移、最大漂移及结束时速度。`complete` 仅表示
+该时间段记录完整；提前跌倒的窗口会标记未完成，未观测到的位移保留为 `null`。
+这些诊断用于定位停止失衡，不替代停稳与整体步态验收。
+
 The task registers as `Mjlab-Velocity-Flat-WhaleChan-VD39`. The framework provides
 GPU physics and PPO; this package supplies the body/control mapping, data
 instrumentation and CPU deployment evaluation. For physical hardware, measured

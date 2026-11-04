@@ -8,9 +8,11 @@ import numpy as np, mujoco, onnxruntime as ort
 if __package__:
     from .footsteps import FootstepTracker
     from .bundle import verify
+    from .stop_metrics import stop_windows
 else:
     from footsteps import FootstepTracker
     from bundle import verify
+    from stop_metrics import stop_windows
 
 
 def torque(target, q, qd, kp, kd, caps):
@@ -268,6 +270,7 @@ def main():
         "forward_displacement_m": float((r.d.qpos[:3] - start) @ initial_forward),
         "walking_slip_m": slip.tolist(),
         "stops": stops,
+        "stop_windows": stop_windows(rows),
         "neural_policy": True,
         "qp_calls": 0,
         "eval_resets": 0,
