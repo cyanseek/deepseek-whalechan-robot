@@ -52,6 +52,28 @@ are measured independently of training rewards. A completed command can report
 `qualified: false`; inspect that field rather than treating process exit 0 as a
 walking result. Evaluate intermediate checkpoints as well as the final one.
 
+Run all three 20-second cases with a single command:
+
+```bash
+whalechan-evaluate-suite runs/policy-01 --out runs/eval-suite-01
+# Also available without reinstalling an existing editable checkout:
+python -m whalechan_training.evaluate_suite runs/policy-01 --out runs/eval-suite-02
+```
+
+Each case starts a separate native CPU process from the same bundle and home
+state. The suite retains per-case logs, reports and full trajectories, then
+collects step counts, slip, stops, drift and heading in `summary.json`. A failed
+case does not skip the remaining cases. Existing output directories are refused.
+The suite exits **0** only when all three reports qualify, **1** for completed
+evaluations with unqualified motion, or **2** for execution/report errors.
+The individual evaluator's criteria and exit behavior are unchanged.
+
+三场景评估依次检查默认速度、0.065 m/s 和立即起步，均由真实策略从初始姿态运行，
+每场计划20秒，物理失败时保留提前结束的轨迹。各场独立保存日志、轨迹和报告，
+失败后仍继续其他场景；`summary.json`
+集中呈现左右脚步数、足滑、停稳与漂移等结果。退出码 0 表示三场全部达标，1 表示
+评估完成但动作未全部达标，2 表示执行或报告错误。请为每轮指定新的输出目录。
+
 ## Resume and retain experiments
 
 ```bash

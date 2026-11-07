@@ -25,6 +25,7 @@ whalechan_training_vd39 = "whalechan_training.registration"
 whalechan-train = "whalechan_training.run:main"
 whalechan-export = "whalechan_training.export:main"
 whalechan-evaluate = "whalechan_training.evaluate:main"
+whalechan-evaluate-suite = "whalechan_training.evaluate_suite:main"
 whalechan-audit-data = "whalechan_training.audit_data:main"
 
 [tool.setuptools.packages.find]
