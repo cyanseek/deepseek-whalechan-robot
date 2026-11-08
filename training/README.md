@@ -111,6 +111,38 @@ Joint, action and motor orders are mapped by name. The body faces local **−Y**
 The actor has no privileged linear velocity, world position or reference gait.
 The evaluator has no teacher startup, QP fallback or automatic episode reset.
 
+### Inspect the simulation-to-hardware interface
+
+```bash
+whalechan-inspect-policy runs/policy-01 --out runs/interface-01.json
+# An existing editable installation can also use:
+python -m whalechan_training.inspect_policy runs/policy-01 --out runs/interface-02.json
+```
+
+The inspector verifies the sealed bundle and reads the compiled model and ONNX
+shapes on CPU, without running the policy. Its JSON maps each actuator to its
+action and joint-observation indices, axis in the attached body's frame, range,
+observation home, target offset/scale and estimated gains/torque cap. It also
+lists observation slices and their intended sensor/software sources. All indices
+are zero-based. Joint observations, previous actions and actuators have distinct
+orders: do not wire them by matching array positions. The position-observation
+home and action-target offset are also separate values.
+
+Use this report when defining encoder zero/sign, IMU mounting and actuator
+commands. Model axes are in local body frames; hardware sign/zero still need
+measurement. The report describes the current training interface, not a servo
+driver or calibrated motor specification. Position firmware gains are not
+interchangeable with the model's Nm/rad gains. Encoder/IMU calibration, measured
+actuator response and mass/inertia remain part of hardware bring-up. Different
+observation layouts require a matching inspector/runtime. Existing reports are
+preserved; choose a fresh output filename.
+
+接口检查在CPU上读取已校验的策略包，导出每轴的动作/观测/执行器序号、局部轴线、
+角度范围、观测零位、目标偏置/缩放及估计增益/力矩上限，同时列出观测分段和来源。
+三种数组顺序不相同，观测零位也不等于动作偏置；对接编码器、IMU和舵机时应按名称
+核对，再实测零位、方向、响应及质量惯量。工具不执行策略或连接硬件，输出不代表
+已标定的电机参数；已有报告不会覆盖，其他观测布局需使用匹配的工具和运行时。
+
 `data-summary.json` counts all transitions. `command-coverage.json` separates
 standing/walking exposure, termination causes, completed command segments and
 reset action history. These groups use the command **before** a step; a fall
