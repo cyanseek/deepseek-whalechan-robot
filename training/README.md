@@ -143,6 +143,58 @@ preserved; choose a fresh output filename.
 核对，再实测零位、方向、响应及质量惯量。工具不执行策略或连接硬件，输出不代表
 已标定的电机参数；已有报告不会覆盖，其他观测布局需使用匹配的工具和运行时。
 
+### Map named sensors and action targets
+
+`whalechan_training.policy_io.PolicyIO` implements the current observation/target
+transform using NumPy, with no device access. It takes calibrated, named joint
+measurements and body-frame IMU values; dictionary insertion order does not
+affect policy wiring. Use the inspector above to verify the bundle before
+constructing the adapter:
+
+```python
+import json
+from pathlib import Path
+from whalechan_training.inspect_policy import inspect_policy
+from whalechan_training.policy_io import PolicyIO, EncoderCalibration
+
+bundle = Path("runs/policy-01")
+inspect_policy(bundle)
+interface = PolicyIO(json.loads((bundle / "contract.json").read_text()))
+
+# At each policy tick, supply synchronized, calibrated measurements:
+# obs = interface.observe(gyro_body=gyro_rad_s, gravity_body=gravity_unit,
+#     joint_position=q_by_name, joint_velocity=qd_by_name,
+#     command=[forward_m_s, 0.0, 0.0])
+# action = session.run(None, {input_name: obs[None]})[0][0]
+# targets_by_name = interface.targets(action)
+```
+
+Joint positions are absolute model radians; the adapter subtracts `joint_home`.
+Gyro and gravity must already be expressed in the base frame, with gravity a
+downward unit vector rather than raw accelerometer readings. The command is
+`[forward m/s, lateral m/s, yaw rad/s]`; the current recipe trains only forward
+and zero commands. `targets()` clips actions to ±3, applies the separate action
+offset/scale and retains previous actions in **action order**. Call it once per
+accepted policy tick. Reset history only when starting a new physical episode;
+pausing does not reset it. Missing joints, nonfinite values and other observation
+layouts are rejected. The current body produces 78 observation values.
+
+`EncoderCalibration(zero_rad, direction, encoder_radians_per_joint_radian)`
+converts each measured encoder position/velocity into model coordinates and a
+joint target back into encoder radians. Supply measured zero, sign (±1) and
+ratio; use ratio 1 for joint-side feedback. This conversion does not account for
+backlash, wrapping, sensor latency or servo firmware control. The caller still
+owns clock synchronization, actuator limits, matching control mode and fault
+handling. No serial transport, motor calibration or hardware execution is added
+by this adapter; the existing simulator remains unchanged.
+
+命名接口接收已标定的关节角度/角速度与机身坐标系IMU，按策略约定生成观测、解码
+目标并保存上一步动作。字典顺序不影响关节对应；观测零位、动作偏置与编码器零位
+分别处理。`EncoderCalibration` 用实测零位、正负方向和传动比换算编码器与模型
+坐标。暂停时保留动作历史，新的物理回合才重置；缺少关节、非有限值或其他观测
+布局会报错。当前为78维接口，仍需驱动层完成时间同步、电机模式/限幅和故障处理，
+没有连接硬件或替换既有仿真控制器。
+
 `data-summary.json` counts all transitions. `command-coverage.json` separates
 standing/walking exposure, termination causes, completed command segments and
 reset action history. These groups use the command **before** a step; a fall

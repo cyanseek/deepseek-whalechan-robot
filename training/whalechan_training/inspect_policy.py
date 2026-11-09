@@ -9,10 +9,7 @@ import numpy as np
 import onnxruntime as ort
 
 from .bundle import verify
-
-OBSERVATION_ORDER = [
-    "base_ang_vel", "projected_gravity", "joint_pos", "joint_vel", "actions", "command"
-]
+from .policy_io import OBSERVATION_ORDER
 
 
 def inspect_policy(run: Path) -> dict:
