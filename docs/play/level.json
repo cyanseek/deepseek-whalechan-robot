@@ -1,0 +1,252 @@
+[
+  {
+    "time": 0.6,
+    "objects": [
+      {
+        "id": 1,
+        "kind": "star",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 2.4,
+    "objects": [
+      {
+        "id": 2,
+        "kind": "star",
+        "lane": 0
+      },
+      {
+        "id": -2,
+        "kind": "jelly",
+        "lane": 1
+      }
+    ]
+  },
+  {
+    "time": 4.2,
+    "objects": [
+      {
+        "id": 3,
+        "kind": "star",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 6.0,
+    "objects": [
+      {
+        "id": 4,
+        "kind": "star",
+        "lane": 1
+      },
+      {
+        "id": -4,
+        "kind": "jelly",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 7.8,
+    "objects": [
+      {
+        "id": 5,
+        "kind": "star",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 9.6,
+    "objects": [
+      {
+        "id": 6,
+        "kind": "star",
+        "lane": 0
+      },
+      {
+        "id": -6,
+        "kind": "jelly",
+        "lane": 1
+      }
+    ]
+  },
+  {
+    "time": 11.4,
+    "objects": [
+      {
+        "id": 7,
+        "kind": "star",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 13.200000000000001,
+    "objects": [
+      {
+        "id": 8,
+        "kind": "star",
+        "lane": 2
+      },
+      {
+        "id": -8,
+        "kind": "jelly",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 15.000000000000002,
+    "objects": [
+      {
+        "id": 9,
+        "kind": "star",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 16.8,
+    "objects": [
+      {
+        "id": 10,
+        "kind": "star",
+        "lane": 1
+      },
+      {
+        "id": -10,
+        "kind": "jelly",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 18.6,
+    "objects": [
+      {
+        "id": 11,
+        "kind": "star",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 20.400000000000002,
+    "objects": [
+      {
+        "id": 12,
+        "kind": "star",
+        "lane": 0
+      },
+      {
+        "id": -12,
+        "kind": "jelly",
+        "lane": 1
+      }
+    ]
+  },
+  {
+    "time": 22.200000000000003,
+    "objects": [
+      {
+        "id": 13,
+        "kind": "star",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 24.000000000000004,
+    "objects": [
+      {
+        "id": 14,
+        "kind": "star",
+        "lane": 2
+      },
+      {
+        "id": -14,
+        "kind": "jelly",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 25.800000000000004,
+    "objects": [
+      {
+        "id": 15,
+        "kind": "star",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 27.600000000000005,
+    "objects": [
+      {
+        "id": 16,
+        "kind": "star",
+        "lane": 0
+      },
+      {
+        "id": -16,
+        "kind": "jelly",
+        "lane": 2
+      }
+    ]
+  },
+  {
+    "time": 29.400000000000006,
+    "objects": [
+      {
+        "id": 17,
+        "kind": "star",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 31.200000000000006,
+    "objects": [
+      {
+        "id": 18,
+        "kind": "star",
+        "lane": 1
+      },
+      {
+        "id": -18,
+        "kind": "jelly",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 33.00000000000001,
+    "objects": [
+      {
+        "id": 19,
+        "kind": "star",
+        "lane": 0
+      }
+    ]
+  },
+  {
+    "time": 34.800000000000004,
+    "objects": [
+      {
+        "id": 20,
+        "kind": "star",
+        "lane": 0
+      },
+      {
+        "id": -20,
+        "kind": "jelly",
+        "lane": 2
+      }
+    ]
+  }
+]

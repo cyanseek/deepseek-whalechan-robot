@@ -2,6 +2,8 @@
 
 Read [project-info.json](../project-info.json) for a compact capability and command index. This guide describes local CLI use of VD24; it does not install a plugin or expose an MCP server.
 
+For the asset-free screen game, open [Star Catcher](https://cyanseek.github.io/deepseek-whalechan-robot/play/) or the standalone `docs/play/index.html`. See [build and test instructions](play/README.md). It runs authored game logic and Canvas graphics, without a model provider, robot connection or learned policy.
+
 ## Inputs and setup
 
 - Run commands from the project root.

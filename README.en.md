@@ -12,6 +12,8 @@ The current source includes [DeepSeek text interaction](docs/INTERACTION.md), [c
 
 **Training workflow available:** [own-body mjlab / PPO training and data tools](training/README.md), with online sampling, checkpoints, ONNX export and independent CPU walk/stop evaluation. Learned locomotion remains experimental; the demos below use the existing controller.
 
+**Play together:** [Star Catcher 🐋](https://cyanseek.github.io/deepseek-whalechan-robot/play/)—catch stars and dodge jellyfish with keys or touch. This standalone screen game needs no installation, model or API; [download it for offline play](docs/play/README.md). Robot motion is available through the simulation entry points below.
+
 [Watch the demo](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [Quick start](#quick-start) · [Roadmap](#roadmap) · [For agents](#for-agents) · [Developer guide](docs/CHARACTER.md)
 
 [![DeepSeek Whale-chan Robot: DeepSeek Whale-chan walking with coordinated tail and arms in MuJoCo; real-time-speed simulation excerpt](docs/media/vd24/walk.gif)](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html)

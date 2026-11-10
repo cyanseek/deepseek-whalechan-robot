@@ -1,0 +1,161 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Whale-chan · Star Catcher / 星海收集站</title><style>
+*{box-sizing:border-box}body{margin:0;background:#edf5fb;color:#2b507b;font-family:"Microsoft YaHei",system-ui,sans-serif}main{max-width:860px;margin:28px auto;padding:22px}h1{font-size:30px;margin:8px 0 12px}.intro{color:#7390aa;font-size:14px;line-height:1.8}.panel{padding:18px;background:white;border-radius:25px;box-shadow:0 14px 55px #5685b51a}canvas{width:100%;aspect-ratio:4/3;display:block;border-radius:18px;outline:none;touch-action:none}button{border:1px solid #d9e5ef;border-radius:12px;background:#f8fbfe;color:#426990;cursor:pointer;font:inherit;padding:12px}.row{display:flex;gap:10px;margin-top:12px}.row button{flex:1}.primary{background:#4d7eaf;color:white;border:0}#gameStatus{font-size:14px;line-height:1.8}small{color:#7c94aa;line-height:1.8;display:block}.footer{margin:15px 5px}@media(max-width:550px){main{margin:8px auto;padding:12px}h1{font-size:25px}.panel{padding:10px}.row{gap:5px}button{padding:10px 8px;font-size:13px}}</style>
+<main><small>WHALE-CHAN / PLAY TOGETHER</small><h1>和大肥鱼，捞一片星海。</h1><p class="intro">接住 6 颗星星，躲开紫色水母。35 秒，3 颗爱心。<br>方向键或 A / D 移动，空格暂停；也可以点泳道。<br>Catch 6 stars, avoid jellyfish. Arrows / A / D to move, Space to pause, or tap a lane.</p><section class="panel"><canvas id="game" width="320" height="240" tabindex="0" aria-label="可玩的星海收集游戏"></canvas><div class="row"><button id="start" class="primary">开始 / 重玩 · Play</button><button id="pause">暂停 / 继续 · Pause</button></div><div class="row"><button data-lane="0">← 左 / Left</button><button data-lane="1">中 / Center</button><button data-lane="2">右 / Right →</button></div><p id="gameStatus" aria-live="polite"></p></section><small class="footer">离线小游戏 · 无需模型、服务器或 API 密钥。玩法和画面为项目代码绘制。<br>
+Offline screen-game prototype · no robot control, learned policy or hardware connection.<br>
+<a href="https://github.com/cyanseek/deepseek-whalechan-robot">DeepSeek Whale-chan Robot 🐋</a>
+</small><noscript>请启用 JavaScript 来玩游戏。Enable JavaScript to play.</noscript></main>
+<script>
+/* Authored three-lane screen game. Fixed 20 ms steps, no network or robot I/O. */
+class OfflineStars {
+  constructor(waves) {
+    this.waves = structuredClone(waves);
+    this.goal = 6;
+    this.duration = 35;
+    this.round = 0;
+    this.reset('ready');
+  }
+
+  reset(phase) {
+    this.phase = phase;
+    this.time = 0;
+    this.lane = 1;
+    this.score = 0;
+    this.lives = 3;
+    this.objects = [];
+    this.acc = 0;
+    this.wave = 0;
+    this.paused = false;
+  }
+
+  start() {
+    this.reset('running');
+    this.round++;
+  }
+
+  setPaused(paused) {
+    if (this.phase === 'running') this.paused = Boolean(paused);
+  }
+
+  move(lane) {
+    if (!Number.isInteger(lane) || lane < 0 || lane > 2) {
+      throw new Error('lane must be 0, 1 or 2');
+    }
+    if (this.phase === 'running' && !this.paused) this.lane = lane;
+  }
+
+  tick(dt) {
+    if (!Number.isFinite(dt) || dt < 0 || dt > 0.5) {
+      throw new Error('dt must be finite and between 0 and 0.5 seconds');
+    }
+    if (this.phase !== 'running' || this.paused) return;
+    this.acc += dt;
+    while (this.acc >= 0.02 - 1e-10 && this.phase === 'running') {
+      this.acc -= 0.02;
+      this.step();
+    }
+  }
+
+  step() {
+    this.time += 0.02;
+    const wave = this.waves[this.wave];
+    if (wave && this.time + 1e-9 >= wave.time) {
+      for (const object of wave.objects) this.objects.push({...object, y: 39});
+      this.wave++;
+    }
+    const remaining = [];
+    for (const object of this.objects) {
+      object.y += 43 * 0.02;
+      if (object.y >= 188) {
+        if (object.lane === this.lane) {
+          if (object.kind === 'star') this.score++;
+          else this.lives--;
+        }
+      } else remaining.push(object);
+    }
+    this.objects = remaining;
+    if (this.lives <= 0) this.phase = 'lost';
+    else if (this.score >= this.goal) this.phase = 'won';
+    else if (this.time + 1e-9 >= this.duration) this.phase = 'lost';
+  }
+
+  snapshot() {
+    return structuredClone({
+      phase: this.phase, time: this.time, lane: this.lane,
+      score: this.score, lives: this.lives, goal: this.goal,
+      duration: this.duration, objects: this.objects, round: this.round,
+    });
+  }
+}
+
+if (typeof module !== 'undefined') module.exports = OfflineStars;
+</script>
+<script>
+/* Renderer only. Collisions, score, pause and outcome come from OfflineStars. */
+window.starView=(()=>{
+const c=document.getElementById('game'),g=c.getContext('2d');let data=null,send=()=>{},x=160;
+const laneX=[66,160,254];
+function rr(x,y,w,h,r,fill){g.fillStyle=fill;g.beginPath();g.roundRect(x,y,w,h,r);g.fill()}
+function text(s,x,y,size=12,color='#315b84'){g.fillStyle=color;g.textAlign='center';g.font=`600 ${size}px "Microsoft YaHei",sans-serif`;g.fillText(s,x,y)}
+function star(x,y,r=9){g.fillStyle='#ffd669';g.strokeStyle='#d9a044';g.lineWidth=.7;g.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?r*.46:r;let xx=x+Math.cos(a)*rr,yy=y+Math.sin(a)*rr;i?g.lineTo(xx,yy):g.moveTo(xx,yy)}g.closePath();g.fill();g.stroke()}
+function jelly(x,y){g.fillStyle='#aa91db';g.beginPath();g.arc(x,y,10,Math.PI,0);g.lineTo(x+10,y+4);g.lineTo(x-10,y+4);g.fill();g.strokeStyle='#9475c4';g.lineWidth=2;for(let i=-6;i<=6;i+=6){g.beginPath();g.moveTo(x+i,y+4);g.quadraticCurveTo(x+i-4,y+13,x+i+2,y+14);g.stroke()}g.fillStyle='#574e83';g.fillRect(x-5,y-1,2,2);g.fillRect(x+3,y-1,2,2)}
+function whale(x,y,t){g.save();g.translate(x,y);g.rotate(Math.sin(t*2)*.035);g.fillStyle='#75bde9';g.beginPath();g.moveTo(21,2);g.quadraticCurveTo(34,-15,38,-11);g.quadraticCurveTo(41,3,26,9);g.fill();g.beginPath();g.ellipse(0,0,25,16,0,0,Math.PI*2);g.fill();g.fillStyle='#eaf9ff';g.beginPath();g.ellipse(-2,7,19,8,0,0,Math.PI);g.fill();g.fillStyle='#3d5c96';g.beginPath();g.moveTo(-20,-8);g.quadraticCurveTo(-3,-25,15,-10);g.lineTo(7,-3);g.lineTo(1,-11);g.lineTo(-7,-3);g.closePath();g.fill();for(let k=-2;k<=2;k++){g.fillStyle='#fff';g.beginPath();g.ellipse(k*6,-17+Math.abs(k)*1.6,4,3.5,-k*.2,0,Math.PI*2);g.fill()}g.fillStyle='#284a76';g.beginPath();g.ellipse(-10,1,2,3,0,0,7);g.fill();g.beginPath();g.ellipse(5,1,2,3,0,0,7);g.fill();g.fillStyle='#edb5c5';g.beginPath();g.ellipse(-16,6,4,2,0,0,7);g.fill();g.beginPath();g.ellipse(12,6,4,2,0,0,7);g.fill();g.strokeStyle='#456c96';g.lineWidth=1;g.beginPath();g.arc(-2,5,3,0,Math.PI);g.stroke();g.restore()}
+function draw(ms){requestAnimationFrame(draw);if(c.hidden)return;const s=data?.game,t=ms/1000;g.clearRect(0,0,320,240);const bg=g.createLinearGradient(0,0,0,240);bg.addColorStop(0,'#edfaff');bg.addColorStop(1,'#a9dcf0');g.fillStyle=bg;g.fillRect(0,0,320,240);
+for(let i=0;i<12;i++){let y=(230-i*21-(t*7)%252+252)%252;g.strokeStyle='#ffffff88';g.lineWidth=1;g.beginPath();g.arc((i*71+13)%320,y,2+i%4,0,7);g.stroke()}
+for(let i=0;i<3;i++){rr(laneX[i]-40,42,80,174,20,i===(s?.lane??1)?'#ffffff44':'#ffffff18');g.fillStyle='#6cadd344';g.fillRect(laneX[i]-27,215,54,2)}
+g.fillStyle='#7fc6df55';g.beginPath();g.moveTo(0,230);for(let xx=0;xx<=320;xx+=8)g.lineTo(xx,228+Math.sin(xx*.05+t)*4);g.lineTo(320,240);g.lineTo(0,240);g.fill();
+rr(9,8,100,27,11,'#ffffffd9');star(23,21,7);text(`${s?.score??0} / ${s?.goal??6}`,65,26,13);
+rr(117,8,85,27,11,'#ffffffd9');text(`${Math.max(0,Math.ceil((s?.duration??35)-(s?.time??0)))} 秒`,160,26,12);
+rr(210,8,101,27,11,'#ffffffd9');text('♥'.repeat(s?.lives??3)+'♡'.repeat(3-(s?.lives??3)),260,26,16,'#d98fa8');
+for(const o of s?.objects??[]){o.kind==='star'?star(laneX[o.lane],o.y):jelly(laneX[o.lane],o.y)}
+x+=(laneX[s?.lane??1]-x)*.24;whale(x,195,t);
+const paused=data&&(data.stopped||data.carried||data.state.paused),phase=s?.phase??'ready';
+if(paused||phase!=='running'){rr(31,67,258,94,18,'#ffffffec');let title='星海收集站',line='接住星星，绕开小水母',last='点击下方「开始游戏」';if(phase==='won'){title='星星收齐啦！';line='主人，我们把星星捞回来啦';last='再来一局也可以呀'}else if(phase==='lost'){title='再捞一次，好不好？';line=s.lives<=0?'被小水母挠到啦':'时间到，下次再多捞一点';last='点击下方「再来一局」'}if(paused){title=data.carried?'被主人抱起来啦':'先歇一小会儿';line='进度和星星都留在这里';last=data.carried?'放下后按「继续」':'空格 / 暂停继续按钮'}text(title,160,94,19);text(line,160,119,12);text(last,160,145,10,'#6b90ad')}
+}requestAnimationFrame(draw);
+c.addEventListener('pointerdown',e=>{if(!data?.game||data.game.phase!=='running')return;const b=c.getBoundingClientRect();send('lane',Math.max(0,Math.min(2,Math.floor((e.clientX-b.left)/b.width*3))));c.focus()});
+document.addEventListener('keydown',e=>{if(c.hidden||e.target.closest('input,textarea,select,button,a,[contenteditable=true]')||e.repeat)return;const a=({ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',' ':'pause'})[e.key];if(a){e.preventDefault();send(a)}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&data?.game?.phase==='running'&&!data.stopped)send('pause')});
+return{connect:f=>send=f,update:s=>{data=s;const v=s.game;document.getElementById('gameStatus').textContent=v?`星星 ${v.score} / ${v.goal} · 爱心 ${v.lives} · ${Math.max(0,Math.ceil(v.duration-v.time))} 秒 · ${{ready:'等待开始',running:s.stopped||s.state.paused?'暂停中':'游戏中',won:'通关！',lost:'这局结束'}[v.phase]}`:'先按开始游戏，载入星海收集站';}};
+})();
+</script>
+<script>
+const STAR_LEVEL = [{"time":0.6,"objects":[{"id":1,"kind":"star","lane":2}]},{"time":2.4,"objects":[{"id":2,"kind":"star","lane":0},{"id":-2,"kind":"jelly","lane":1}]},{"time":4.2,"objects":[{"id":3,"kind":"star","lane":2}]},{"time":6,"objects":[{"id":4,"kind":"star","lane":1},{"id":-4,"kind":"jelly","lane":2}]},{"time":7.8,"objects":[{"id":5,"kind":"star","lane":0}]},{"time":9.6,"objects":[{"id":6,"kind":"star","lane":0},{"id":-6,"kind":"jelly","lane":1}]},{"time":11.4,"objects":[{"id":7,"kind":"star","lane":2}]},{"time":13.200000000000001,"objects":[{"id":8,"kind":"star","lane":2},{"id":-8,"kind":"jelly","lane":0}]},{"time":15.000000000000002,"objects":[{"id":9,"kind":"star","lane":2}]},{"time":16.8,"objects":[{"id":10,"kind":"star","lane":1},{"id":-10,"kind":"jelly","lane":2}]},{"time":18.6,"objects":[{"id":11,"kind":"star","lane":0}]},{"time":20.400000000000002,"objects":[{"id":12,"kind":"star","lane":0},{"id":-12,"kind":"jelly","lane":1}]},{"time":22.200000000000003,"objects":[{"id":13,"kind":"star","lane":0}]},{"time":24.000000000000004,"objects":[{"id":14,"kind":"star","lane":2},{"id":-14,"kind":"jelly","lane":0}]},{"time":25.800000000000004,"objects":[{"id":15,"kind":"star","lane":2}]},{"time":27.600000000000005,"objects":[{"id":16,"kind":"star","lane":0},{"id":-16,"kind":"jelly","lane":2}]},{"time":29.400000000000006,"objects":[{"id":17,"kind":"star","lane":0}]},{"time":31.200000000000006,"objects":[{"id":18,"kind":"star","lane":1},{"id":-18,"kind":"jelly","lane":0}]},{"time":33.00000000000001,"objects":[{"id":19,"kind":"star","lane":0}]},{"time":34.800000000000004,"objects":[{"id":20,"kind":"star","lane":0},{"id":-20,"kind":"jelly","lane":2}]}];
+/* Browser input and clock; the game engine owns score and collisions. */
+const engine = new OfflineStars(STAR_LEVEL);
+let last = performance.now();
+
+function snapshot() {
+  return {
+    game: engine.snapshot(), stopped: engine.paused, carried: false,
+    state: {paused: engine.paused},
+  };
+}
+
+function input(action, lane) {
+  if (action === 'start') engine.start();
+  else if (action === 'pause') engine.setPaused(!engine.paused);
+  else engine.move(action === 'lane' ? lane
+    : Math.max(0, Math.min(2, engine.lane + (action === 'left' ? -1 : 1))));
+  window.starView.update(snapshot());
+}
+
+window.starView.connect(input);
+document.getElementById('start').onclick = () => {
+  input('start');
+  document.getElementById('game').focus();
+};
+document.getElementById('pause').onclick = () => input('pause');
+document.querySelectorAll('[data-lane]').forEach(button => {
+  button.onclick = () => input('lane', Number(button.dataset.lane));
+});
+
+function loop(ms) {
+  // A suspended/background browser must not fast-forward the whole round.
+  engine.tick(Math.min(0.1, Math.max(0, (ms - last) / 1000)));
+  last = ms;
+  window.starView.update(snapshot());
+  requestAnimationFrame(loop);
+}
+window.starView.update(snapshot());
+requestAnimationFrame(loop);
+</script>
+</html>

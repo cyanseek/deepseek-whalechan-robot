@@ -12,6 +12,8 @@ AI コンパニオンと人・ロボットのインタラクションを目指�
 
 **学習用ワークフローを公開：** [本体に合わせた mjlab / PPO 学習とデータ処理](training/README.md)。オンライン収集、チェックポイント、ONNX 出力、独立した CPU 歩行・停止評価を含みます。学習歩行は改善中で、以下のデモは既存のコントローラーを使用しています。
 
+**一緒に遊ぼう：** [星海コレクター 🐋](https://cyanseek.github.io/deepseek-whalechan-robot/play/)で星を集め、クラゲを避けましょう。キーボードとタッチ操作に対応。独立した画面ゲームなので、インストール・モデル・API は不要で、[ダウンロードしてオフラインでも遊べます](docs/play/README.md)。ロボットの動作は以下のシミュレーション入口から体験できます。
+
 [デモを見る](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [クイックスタート](#クイックスタート) · [ロードマップ](#ロードマップ) · [Agent 向け](#agent-向け) · [開発ガイド](docs/CHARACTER.md)
 
 [![DeepSeek Whale-chan Robot：MuJoCo 内で歩き、尾と腕を連動させる DeepSeek Whale-chan。物理シミュレーションの等速抜粋](docs/media/vd24/walk.gif)](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html)

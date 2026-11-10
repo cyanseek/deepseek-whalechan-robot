@@ -12,6 +12,8 @@
 
 **训练入口已开放：** [自身身体的 mjlab / PPO 训练与数据流程](training/README.md)，包含在线采样、检查点、ONNX 导出和独立 CPU 行走/停止评估。学习步态仍在优化；下方演示使用现有控制器。
 
+**陪她玩一局：** [星海收集站 🐋](https://cyanseek.github.io/deepseek-whalechan-robot/play/)——接星星、躲水母，支持键盘和触屏。这个独立屏幕小游戏无需安装、模型或 API，也可[下载后离线打开](docs/play/README.md)；机器人动作仍由下方仿真入口体验。
+
 [完整演示](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html) · [快速开始](#快速开始) · [路线图](#路线图) · [交给 Agent](#交给-agent) · [开发文档](docs/CHARACTER.md)
 
 [![DeepSeek Whale-chan Robot：DeepSeek 大肥鱼在 MuJoCo 中行走，鲸尾与手臂协调运动；原速仿真节选](docs/media/vd24/walk.gif)](https://cyanseek.github.io/deepseek-whalechan-robot/watch.html)
