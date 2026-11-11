@@ -111,6 +111,28 @@ Joint, action and motor orders are mapped by name. The body faces local **−Y**
 The actor has no privileged linear velocity, world position or reference gait.
 The evaluator has no teacher startup, QP fallback or automatic episode reset.
 
+### Audit retained training samples
+
+`whalechan-audit-data RUN --out NEW_REPORT.json` checks the saved samples against
+`contract.json`. Runs with explicit `actor_dim` / `critic_dim` use those widths
+and the length of `action_joint_names`; the actor's final three values must be
+the command. Original runs without dimension metadata retain the 78/81/23 layout.
+The report states the expected widths and their source, checks both sampled and
+applied actions, and rejects sample-shape mismatches before clipping comparison.
+Incomplete or invalid dimension metadata is an error, not a legacy fallback.
+
+Command coverage, finite-value and clipping checks apply to the retained sample;
+whole-run counters are reported separately. A passing data audit checks recording
+integrity. Walking and stopping are evaluated with the independent CPU scenarios.
+Use a new report filename to preserve previous audits. Reading an expanded data
+contract does not change the policy runtime's supported observation layout.
+
+数据检查按 `contract.json` 中明确保存的观测维度与动作关节数检查样本，保留原先无维度
+字段运行的 78/81/23 兼容方式，并在报告中标明依据。actor 最后三项须为运动指令；
+采样动作与执行动作都检查维度和样本形状，避免数组广播掩盖记录错位。残缺或无效的
+维度定义会报错。检查针对保留样本，全程计数单列；行走和停止能力仍由独立物理评估
+确认。请使用新的报告文件名；数据检查支持扩展维度不等于策略运行时自动支持新接口。
+
 ### Inspect the simulation-to-hardware interface
 
 ```bash
