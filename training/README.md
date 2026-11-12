@@ -52,6 +52,18 @@ are measured independently of training rewards. A completed command can report
 `qualified: false`; inspect that field rather than treating process exit 0 as a
 walking result. Evaluate intermediate checkpoints as well as the final one.
 
+Policy actions must contain one finite value per action joint before clipping.
+NaN/Inf, wrong-sized actions and nonfinite joint targets end evaluation before
+applying that tick. The report records `failure.stage: policy_action`, its time
+and reason, with `qualified: false`; the partial trajectory and bundle hash are
+retained. Failure on the first tick produces an empty trajectory and a `null`
+heading error. Finite actions still use the recorded transform and ±3 clipping.
+
+策略动作在裁剪前须逐关节对应且数值有限。NaN/Inf、尺寸不符或目标溢出时，评估在
+执行该步前结束，报告保留失败时间、原因和 `policy_action` 阶段，结果为未达标。
+已有轨迹和策略哈希保留；首步失败时轨迹为空，朝向误差为 `null`。正常有限动作的
+映射与 ±3 裁剪不变。
+
 Run all three 20-second cases with a single command:
 
 ```bash

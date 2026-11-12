@@ -90,9 +90,16 @@ class Runtime:
         ].astype("float32")
 
     def targets(self, action):
+        action = np.asarray(action, dtype=float)
+        if action.shape != self.offset.shape or not np.isfinite(action).all():
+            raise ValueError(f"Policy action must have shape {self.offset.shape} and finite values")
         action = np.clip(action, -3, 3)
+        with np.errstate(over="ignore", invalid="ignore"):
+            targets = self.offset + self.scale * action
+        if not np.isfinite(targets).all():
+            raise ValueError("Nonfinite joint targets")
         self.previous = action.copy()
-        return (self.offset + self.scale * action)[self.action_to_motor]
+        return targets[self.action_to_motor]
 
     def integrate(self, target):
         delayed = self.delay.popleft()
@@ -189,7 +196,12 @@ def main():
         command = np.array([a.speed if walk else 0.0, 0.0, 0.0])
         obs = r.obs(command)
         action = r.policy.run(None, {r.input: obs[None]})[0][0]
-        target = r.targets(action)
+        try:
+            target = r.targets(action)
+        except ValueError as error:
+            failure = {"time_s": float(r.d.time), "stage": "policy_action",
+                       "reason": str(error)}
+            break
         for _ in range(20):
             r.integrate(target)
             pos, clear, normal, s, bad, tilt, vx = r.measurements()
@@ -290,7 +302,7 @@ def main():
     report["bundle_verification"] = r.bundle
     report["max_heading_error_deg"] = float(
         np.degrees(max(abs(x["heading_error_rad"]) for x in rows))
-    )
+    ) if rows else None
     steps = report["confirmed_steps_by_foot"]
     report["qualified"] = bool(
         failure is None
