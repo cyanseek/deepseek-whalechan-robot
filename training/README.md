@@ -52,6 +52,16 @@ are measured independently of training rewards. A completed command can report
 `qualified: false`; inspect that field rather than treating process exit 0 as a
 walking result. Evaluate intermediate checkpoints as well as the final one.
 
+Evaluation and interface inspection accept bundle directories containing Unicode
+characters or spaces, including on Windows. They read the verified `model.mjb`
+bytes into MuJoCo's virtual filesystem, preserving compiled physics options.
+There is no need to relocate the bundle, change working directory or rebuild it
+from XML. Keep the bundle's recorded MuJoCo version and file hashes matched.
+
+评估与接口检查支持中文、空格等路径，Windows 下也可直接读取原策略包。
+工具通过内存加载已校验的 MJB，保留编译后的物理参数，无需移动策略包、切换
+工作目录或改用 XML 重建；仍须匹配包内记录的 MuJoCo 版本和文件哈希。
+
 Policy actions must contain one finite value per action joint before clipping.
 NaN/Inf, wrong-sized actions and nonfinite joint targets end evaluation before
 applying that tick. The report records `failure.stage: policy_action`, its time

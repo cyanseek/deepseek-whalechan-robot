@@ -7,6 +7,17 @@ import mujoco
 FILES = ("model.mjb", "model.xml", "contract.json", "policy.onnx")
 
 
+def load_model(path):
+    """Read a previously verified bundle's MJB, including Unicode disk paths.
+
+    MuJoCo opens an ASCII virtual filename; Python handles the actual disk path.
+    Load the compiled bytes directly so binary-only options remain intact.
+    """
+    return mujoco.MjModel.from_binary_path(
+        "model.mjb", assets={"model.mjb": (Path(path) / "model.mjb").read_bytes()}
+    )
+
+
 def seal(path):
     p = Path(path)
     target = p / "bundle-manifest.json"

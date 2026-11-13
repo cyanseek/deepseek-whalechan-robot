@@ -40,8 +40,11 @@ def make_bundle(path, *, change=None, input_width=15):
     return path
 
 
-def test_distinct_joint_action_and_motor_orders(tmp_path):
-    report = inspect_policy(make_bundle(tmp_path / "policy"))
+@pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
+def test_distinct_joint_action_and_motor_orders(tmp_path, directory):
+    path = make_bundle(tmp_path / "source")
+    path = path.rename(tmp_path / directory)
+    report = inspect_policy(path)
     two, one = report["joints_in_actuator_order"]
     assert (two["joint"], two["action_index"], two["joint_observation_index"]) == ("two", 0, 1)
     assert (two["position_observation_index"], two["velocity_observation_index"],

@@ -8,7 +8,7 @@ import mujoco
 import numpy as np
 import onnxruntime as ort
 
-from .bundle import verify
+from .bundle import load_model, verify
 from .policy_io import OBSERVATION_ORDER
 
 
@@ -16,7 +16,7 @@ def inspect_policy(run: Path) -> dict:
     run = Path(run)
     verify(run)
     c = json.loads((run / "contract.json").read_text(encoding="utf-8"))
-    m = mujoco.MjModel.from_binary_path(str(run / "model.mjb"))
+    m = load_model(run)
     names, actions = c["joints"], c["action_joint_names"]
     n = len(names)
     if (len(set(names)) != n or len(actions) != n or set(actions) != set(names)

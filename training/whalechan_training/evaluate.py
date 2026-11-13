@@ -7,11 +7,11 @@ import numpy as np, mujoco, onnxruntime as ort
 
 if __package__:
     from .footsteps import FootstepTracker
-    from .bundle import verify
+    from .bundle import load_model, verify
     from .stop_metrics import stop_windows
 else:
     from footsteps import FootstepTracker
-    from bundle import verify
+    from bundle import load_model, verify
     from stop_metrics import stop_windows
 
 
@@ -25,7 +25,7 @@ class Runtime:
         self.run = Path(run)
         self.bundle = verify(self.run)
         self.c = json.loads((self.run / "contract.json").read_text())
-        self.m = mujoco.MjModel.from_binary_path(str(self.run / "model.mjb"))
+        self.m = load_model(self.run)
         self.d = mujoco.MjData(self.m)
         c = self.c
         m = self.m

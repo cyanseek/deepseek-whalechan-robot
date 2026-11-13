@@ -48,9 +48,9 @@ def test_overflowing_target_leaves_history_unchanged():
 
 
 @pytest.mark.parametrize("after_one_tick", [False, True])
-def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys, after_one_tick):
+@pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
+def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys, after_one_tick, directory):
     # Small native body and a diagnostic ONNX, not a trained walking policy.
-    # Relative paths also work with MuJoCo's Windows native file opener.
     monkeypatch.chdir(tmp_path)
     bundle = tmp_path / "policy"
     bundle.mkdir()
@@ -89,7 +89,9 @@ def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys,
     onnx.save(helper.make_model(graph, opset_imports=[helper.make_opsetid("", 18)],
                                 ir_version=10), bundle / "policy.onnx")
     seal(bundle)
-    monkeypatch.setattr(sys, "argv", ["evaluate", "policy", "--out", "result", "--seconds", ".1"])
+    if directory != "policy":
+        bundle = bundle.rename(tmp_path / directory)
+    monkeypatch.setattr(sys, "argv", ["evaluate", str(bundle), "--out", "result", "--seconds", ".1"])
     evaluate.main()
     report = json.loads((tmp_path / "result/report.json").read_text())
     rows = json.loads((tmp_path / "result/trajectory.json").read_text())
