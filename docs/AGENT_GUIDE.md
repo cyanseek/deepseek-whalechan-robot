@@ -71,9 +71,14 @@ Motion learning, voice input and hardware milestones are described in [ROADMAP.m
 ## Experimental policy training
 
 [training/README.md](../training/README.md) provides a separate Linux/WSL Python 3.12
-environment for mjlab/RSL-RL training on the VD32 dynamics candidate. Use
-`whalechan-train`, `whalechan-audit-data`, `whalechan-export` and
-`whalechan-evaluate` in that environment. Its 78-input/23-action policy runs at
+environment for mjlab/RSL-RL training on the VD32 dynamics candidate, installed
+with `./training[train,test]`. For CPU evaluation, interface inspection and data
+audits, install `./training` in a separate Python 3.12+ environment on Windows or
+Linux; Torch, CUDA and mjlab are not required. Supply a compatible exported
+bundle; trained weights are not included. See the [CPU setup](../training/README.md#cpu-evaluation-and-inspection).
+`whalechan-train` and `whalechan-export` need the training environment; both
+environments support `whalechan-audit-data` and `whalechan-evaluate`.
+The 78-input/23-action policy runs at
 50 Hz with a 1 kHz estimated motor model. Keep these artifacts separate from the
 VD24 visual runtime. Inspect `qualified`, per-foot slip, stops and heading in the
 native evaluation report; training reward and successful export are separate

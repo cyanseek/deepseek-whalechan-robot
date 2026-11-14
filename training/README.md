@@ -12,13 +12,69 @@ learned locomotion is experimental.
 
 ## Install
 
+### CPU evaluation and inspection
+
+Use a separate Python 3.12+ environment on Windows or Linux. No CUDA, Torch,
+mjlab, API key or character asset download is needed for these tools.
+From the repository root, on Windows PowerShell:
+
+```powershell
+py -3.13 -m venv .venv-policy
+./.venv-policy/Scripts/python.exe -m pip install ./training
+./.venv-policy/Scripts/python.exe -m pip check
+./.venv-policy/Scripts/whalechan-inspect-policy.exe runs/policy-01 --out runs/interface-01.json
+./.venv-policy/Scripts/whalechan-evaluate-suite.exe runs/policy-01 --out runs/eval-suite-01
+```
+
+On Linux:
+
+```bash
+python3.12 -m venv .venv-policy
+source .venv-policy/bin/activate
+python -m pip install ./training
+python -m pip check
+whalechan-inspect-policy runs/policy-01 --out runs/interface-01.json
+whalechan-evaluate-suite runs/policy-01 --out runs/eval-suite-01
+```
+
+`runs/policy-01` is a placeholder for a complete, compatible exported bundle;
+the repository does not include trained weights. Export one with the training
+environment below, then copy the whole sealed bundle to the CPU computer.
+These commands inspect or simulate the policy and write JSON results; they do
+not launch the character viewer. `whalechan-audit-data` also runs in this CPU
+environment against retained training samples. Training and checkpoint export
+require the **`train` extra**; upgrading an older full setup should use
+`'./training[train,test]'` instead of `'./training[test]'`.
+
+仅检查策略接口、运行独立 CPU 仿真或审计训练样本时，安装 `./training` 即可，
+无需 GPU、Torch、mjlab、API 或角色资产。上面的 `runs/policy-01` 需替换为完整、
+匹配的已导出策略包；仓库不附带训练权重，可在训练机器上导出后整包复制。
+输出为评估 JSON 与轨迹，不会打开角色窗口。请单独建环境，不要更改角色查看器
+的 MuJoCo 3.3.7。继续训练或导出检查点须安装 `[train]`；原先完整安装命令中的
+`[test]` 现在应改为 `[train,test]`。
+
+For CPU tool development, install `'./training[test]'` and run:
+
+```bash
+python -m pytest -q training/tests --ignore=training/tests/test_data.py --ignore=training/tests/test_training_contract.py
+```
+
+The two excluded modules exercise the mjlab/Torch recorder and training task;
+run the full suite in the training environment. CI checks both installations,
+including the CPU commands on Windows and Linux without training dependencies.
+
+CPU 工具测试使用 `[test]`；上面明确排除的两个模块依赖 mjlab/Torch，完整训练
+环境仍运行全部测试。CI 分别验证两种安装，并在 Windows/Linux 检查 CPU 入口。
+
+### GPU training and checkpoint export
+
 Use Linux or WSL, Python 3.12 and a CUDA GPU. From the repository root:
 
 ```bash
 python3.12 -m venv .venv-train
 source .venv-train/bin/activate
 python -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
-python -m pip install -e './training[test]'
+python -m pip install -e './training[train,test]'
 python -m pytest -q training/tests
 ```
 

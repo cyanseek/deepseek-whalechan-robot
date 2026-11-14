@@ -29,6 +29,28 @@ jobs:
       # The cancelled-response physics scenario also runs locally with the assets installed.
       - run: python -m pytest -q tests/test_persona.py -k "not cancelled_response"
       - run: python -m pytest -q tests/test_behavior_interruptions.py
+  cpu-policy-tools:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: training/pyproject.toml
+      - run: python -m pip install ./training
+      - run: python -m pip check
+      - run: python -c "import importlib.util; assert all(importlib.util.find_spec(m) is None for m in ('torch', 'mjlab', 'warp', 'rsl_rl'))"
+      - run: whalechan-evaluate --help
+      - run: whalechan-evaluate-suite --help
+      - run: whalechan-inspect-policy --help
+      - run: whalechan-audit-data --help
+      - run: python -m pip install './training[test]'
+      - run: python -m pytest -q training/tests --ignore=training/tests/test_data.py --ignore=training/tests/test_training_contract.py
   training-contract:
     runs-on: ubuntu-latest
     steps:
@@ -39,5 +61,5 @@ jobs:
           cache: pip
           cache-dependency-path: training/pyproject.toml
       - run: python -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cpu
-      - run: python -m pip install './training[test]'
+      - run: python -m pip install './training[train,test]'
       - run: python -m pytest -q training/tests
