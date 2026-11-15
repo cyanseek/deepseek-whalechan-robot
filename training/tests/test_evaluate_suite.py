@@ -23,7 +23,8 @@ def fake_evaluator(monkeypatch, outcomes):
             (out / "report.json").write_text("{", encoding="utf-8")
         else:
             report = {"qualified": status is True or status == "nonzero", "sim_seconds": 20.,
-                      "confirmed_steps_by_foot": [4, 5], "walking_slip_m": [.01, .02]}
+                      "confirmed_steps_by_foot": [4, 5], "walking_slip_m": [.01, .02],
+                      "walking_speed_windows": [{"mean_command_m_s": .05, "mae_m_s": .02}]}
             if status == "nonboolean":
                 report["qualified"] = "false"
             (out / "report.json").write_text(json.dumps(report), encoding="utf-8")
@@ -51,6 +52,8 @@ def test_suite_runs_all_three_scenarios_and_keeps_unqualified_results(tmp_path, 
     assert calls[1][8:] == ["--speed", "0.065"]
     assert calls[2][8:] == ["--start-immediately"]
     assert result["cases"][0]["metrics"]["confirmed_steps_by_foot"] == [4, 5]
+    assert result["cases"][0]["metrics"]["walking_speed_windows"] == [
+        {"mean_command_m_s": .05, "mae_m_s": .02}]
     assert result == json.loads((out / "summary.json").read_text())
 
 

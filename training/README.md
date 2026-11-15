@@ -152,6 +152,32 @@ The individual evaluator's criteria and exit behavior are unchanged.
 集中呈现左右脚步数、足滑、停稳与漂移等结果。退出码 0 表示三场全部达标，1 表示
 评估完成但动作未全部达标，2 表示执行或报告错误。请为每轮指定新的输出目录。
 
+### Check commanded versus achieved walking speed
+
+`report.json` and the suite's per-case metrics include `walking_speed_windows`
+for the two walking periods: 2–8 s (0–8 s for immediate start) and 11–17 s.
+Each entry compares the recorded forward command with signed **body-forward**
+velocity, reporting mean command, mean measured speed, signed mean error
+(`measured - command`), mean absolute error (`mae_m_s`) and root mean square
+error (`rmse_m_s`). Backward motion stays negative; lateral speed does not count
+as forward tracking. Inspect these together with steps, slip and heading.
+
+The statistics equally weight the recorded 50 Hz post-control-step samples with
+nonzero forward commands. They include acceleration/deceleration within each
+walking period and any partial final control step after failure. `samples`,
+observed timestamps and `complete` expose early termination or missing samples;
+`complete` requires every scheduled sample. Empty windows have `null` statistics.
+Nonfinite speed/command samples are counted in `invalid_samples`, with that
+window's statistics left `null`. These diagnostics do not alter `qualified`,
+training rewards or control, and are not world displacement measurements.
+
+`walking_speed_windows` 按两段行走分别列出要求速度、实测前向速度、偏差、平均绝对
+误差和均方根误差，便于分辨原地不动、倒退或平均速度相同但波动很大的情况。
+速度采用机身前向的有符号值；横移不计作前进，应结合步数、足滑和偏航判断。
+统计为50 Hz控制步后采样的等权均值，包含起步过渡和失败时最后不足一控制步的样本。
+样本数、观测起止时间及完整标记会保留提前结束或缺采样；无样本时为 `null`，
+非有限值会计数并使该窗口统计为 `null`。原验收条件、奖励与控制保持不变。
+
 ## Resume and retain experiments
 
 ```bash
