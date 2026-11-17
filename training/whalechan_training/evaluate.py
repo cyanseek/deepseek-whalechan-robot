@@ -197,7 +197,15 @@ def main():
         walk = ((0 if a.start_immediately else 2) <= t < 8) or (11 <= t < 17)
         command = np.array([a.speed if walk else 0.0, 0.0, 0.0])
         obs = r.obs(command)
-        action = r.policy.run(None, {r.input: obs[None]})[0][0]
+        try:
+            outputs = r.policy.run(None, {r.input: obs[None]})
+        except Exception as error:
+            # Preserve completed ticks on inference failure; do not advance
+            # physics or replace the failed call with an old/default action.
+            failure = {"time_s": float(r.d.time), "stage": "policy_inference",
+                       "exception_type": type(error).__name__, "reason": str(error)}
+            break
+        action = outputs[0][0]
         try:
             target = r.targets(action)
         except ValueError as error:
@@ -323,6 +331,8 @@ def main():
             {k: v for k, v in report.items() if k != "footstep_events"}, indent=2
         )
     )
+    if failure and failure.get("stage") == "policy_inference":
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

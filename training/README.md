@@ -130,6 +130,18 @@ heading error. Finite actions still use the recorded transform and ±3 clipping.
 已有轨迹和策略哈希保留；首步失败时轨迹为空，朝向误差为 `null`。正常有限动作的
 映射与 ±3 裁剪不变。
 
+If an ONNX inference call raises an exception, evaluation saves the completed
+trajectory and a `policy_inference` failure with the exception type, reason and
+simulation time, then exits **2**. That tick does not advance physics or reuse
+an earlier action. The suite retains this report as an execution error and
+continues the remaining scenarios. Bundle-loading errors still fail before
+the evaluation loop starts.
+
+ONNX 推理调用报错时，评估保存已完成的轨迹及 `policy_inference` 失败报告，包含
+异常类型、原因和仿真时间，然后退出 **2**。失败步不推进物理，也不沿用旧动作。
+三场套件将其记为执行错误，保留报告并继续其他场景；策略包加载错误仍在开始
+评估循环前报出。
+
 Run all three 20-second cases with a single command:
 
 ```bash
@@ -144,7 +156,7 @@ collects step counts, slip, stops, drift and heading in `summary.json`. A failed
 case does not skip the remaining cases. Existing output directories are refused.
 The suite exits **0** only when all three reports qualify, **1** for completed
 evaluations with unqualified motion, or **2** for execution/report errors.
-The individual evaluator's criteria and exit behavior are unchanged.
+Motion qualification uses the individual evaluator's criteria.
 
 三场景评估依次检查默认速度、0.065 m/s 和立即起步，均由真实策略从初始姿态运行，
 每场计划20秒，物理失败时保留提前结束的轨迹。各场独立保存日志、轨迹和报告，

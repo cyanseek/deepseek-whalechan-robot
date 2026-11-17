@@ -49,7 +49,8 @@ def test_overflowing_target_leaves_history_unchanged():
 
 @pytest.mark.parametrize("after_one_tick", [False, True])
 @pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
-def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys, after_one_tick, directory):
+@pytest.mark.parametrize("failure_kind", ["action", "inference"])
+def test_native_evaluation_retains_policy_failure(tmp_path, monkeypatch, capsys, after_one_tick, directory, failure_kind):
     # Small native body and a diagnostic ONNX, not a trained walking policy.
     monkeypatch.chdir(tmp_path)
     bundle = tmp_path / "policy"
@@ -74,7 +75,19 @@ def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys,
              action_offset=[0., 0.], action_scale=[.1, .1])
     (bundle / "contract.json").write_text(json.dumps(c))
     tensors = [helper.make_tensor("bad", TensorProto.FLOAT, [1, 2], [float("nan"), 0.])]
-    if after_one_tick:
+    if failure_kind == "inference":
+        # An input-dependent Gather raises inside real ONNXRuntime, either on
+        # the first call or after one valid action has advanced native physics.
+        tensors = [helper.make_tensor("index", TensorProto.INT64, [1], [10]),
+                   helper.make_tensor("threshold", TensorProto.FLOAT, [1], [0. if after_one_tick else -1.]),
+                   helper.make_tensor("index_shape", TensorProto.INT64, [1], [1]),
+                   helper.make_tensor("good", TensorProto.FLOAT, [1, 2], [.5, .5])]
+        nodes = [helper.make_node("Gather", ["obs", "index"], ["previous"], axis=1),
+                 helper.make_node("Greater", ["previous", "threshold"], ["later"]),
+                 helper.make_node("Cast", ["later"], ["integer"], to=TensorProto.INT64),
+                 helper.make_node("Reshape", ["integer", "index_shape"], ["row"]),
+                 helper.make_node("Gather", ["good", "row"], ["actions"], axis=0)]
+    elif after_one_tick:
         tensors += [helper.make_tensor("index", TensorProto.INT64, [1], [10]),
                     helper.make_tensor("zero", TensorProto.FLOAT, [1], [0.]),
                     helper.make_tensor("good", TensorProto.FLOAT, [1, 2], [.5, .5])]
@@ -92,14 +105,23 @@ def test_native_evaluation_retains_action_failure(tmp_path, monkeypatch, capsys,
     if directory != "policy":
         bundle = bundle.rename(tmp_path / directory)
     monkeypatch.setattr(sys, "argv", ["evaluate", str(bundle), "--out", "result", "--seconds", ".1"])
-    evaluate.main()
+    if failure_kind == "inference":
+        with pytest.raises(SystemExit) as result:
+            evaluate.main()
+        assert result.value.code == 2
+    else:
+        evaluate.main()
     report = json.loads((tmp_path / "result/report.json").read_text())
     rows = json.loads((tmp_path / "result/trajectory.json").read_text())
     assert len(rows) == int(after_one_tick)
     assert report["sim_seconds"] == pytest.approx(.02 if after_one_tick else 0.)
-    assert report["failure"]["stage"] == "policy_action" and not report["qualified"]
+    assert report["failure"]["stage"] == "policy_" + failure_kind and not report["qualified"]
     assert report["failure"]["time_s"] == report["sim_seconds"]
-    assert "finite" in report["failure"]["reason"]
+    if failure_kind == "inference":
+        assert "Gather" in report["failure"]["reason"]
+        assert report["failure"]["exception_type"]
+    else:
+        assert "finite" in report["failure"]["reason"]
     assert (report["max_heading_error_deg"] is None) == (not after_one_tick)
     assert len(report["policy_sha256"]) == 64
     assert json.loads(capsys.readouterr().out)["failure"] == report["failure"]
