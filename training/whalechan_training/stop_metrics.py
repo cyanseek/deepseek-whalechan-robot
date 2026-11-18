@@ -15,9 +15,12 @@ def stop_windows(rows):
         boundary = next((r for r in rows if abs(r["t"] - start) < 1e-7), None)
         window = [r for r in rows if start + 1e-7 < r["t"] <= end + 1e-7
                   and all(value == 0 for value in r["command"])]
+        expected_times = start + np.arange(1, round((end - start) / .02) + 1) * .02
+        times = np.asarray([r["t"] for r in window])
         entry = {"command_s": start, "window_end_s": end,
                  "samples": len(window), "observed_until_s": window[-1]["t"] if window else None,
-                 "complete": bool(boundary is not None and window and abs(window[-1]["t"] - end) < 1e-7),
+                 "complete": bool(boundary is not None and len(times) == len(expected_times)
+                                  and np.allclose(times, expected_times, atol=1e-7, rtol=0)),
                  "net_drift_m": None, "peak_drift_m": None,
                  "end_horizontal_speed_m_s": None, "end_angular_speed_rad_s": None}
         if window:

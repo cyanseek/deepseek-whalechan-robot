@@ -366,14 +366,19 @@ heading. These are development criteria for this flat-ground body.
 
 `report.json.stop_windows` adds diagnostics for the 8–11 s and 17–20 s stop
 windows: net and peak horizontal root displacement since the stop command,
-plus horizontal/angular speed at the last observed state. `complete` means
-the full window was recorded, not that the robot stopped successfully. Early
-termination leaves a partial window; missing boundary data gives `null` drift.
+plus horizontal/angular speed at the last observed state. `complete` requires
+the command-boundary state and all 150 ordered 50 Hz zero-command samples,
+allowing physics-clock roundoff. Missing, repeated, out-of-order or off-schedule
+samples leave the window incomplete even when its end was recorded; observed
+drift is still reported without interpolation. This is recording coverage, not
+successful stopping. Missing boundary data gives `null` drift.
 Displacements are sampled at 50 Hz in world XY, independently of walking foot
 slip. These fields do not change `stops` or `qualified`.
 
-停止窗口同时报告下令后的身体净漂移、最大漂移及结束时速度。`complete` 仅表示
-该时间段记录完整；提前跌倒的窗口会标记未完成，未观测到的位移保留为 `null`。
+停止窗口同时报告下令后的身体净漂移、最大漂移及结束时速度。`complete` 要求
+下令边界状态和按时序记录的全部150个50 Hz零指令采样，允许物理时钟舍入误差。
+缺帧、重复、乱序或偏离采样时刻，即使记录了窗口末尾也会标为未完成；已有漂移
+照常报告，不插值补帧。完整记录不代表停稳成功，缺少边界状态时位移为 `null`。
 这些诊断用于定位停止失衡，不替代停稳与整体步态验收。
 
 The task registers as `Mjlab-Velocity-Flat-WhaleChan-VD39`. The framework provides
