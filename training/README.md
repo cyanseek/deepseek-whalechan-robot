@@ -190,6 +190,40 @@ training rewards or control, and are not world displacement measurements.
 样本数、观测起止时间及完整标记会保留提前结束或缺采样；无样本时为 `null`，
 非有限值会计数并使该窗口统计为 `null`。原验收条件、奖励与控制保持不变。
 
+### Inspect left/right support
+
+`report.json.support_windows` and the suite summary separate the two walking
+and two stopping periods. Each entry reports left-only, right-only, both-sole
+and neither-sole **sample counts and fractions**, mean normal force in newtons
+as `[left, right]`, and `left_normal_force_share`: the left sum divided by the
+sum across both soles. A sole is loaded above 0.3 N, matching the step/stop
+contact threshold. Force means and shares include sub-threshold values.
+
+These are equally weighted 50 Hz post-step samples, including a partial final
+step after failure. They are not contact durations, integrated impulses or
+hardware load-cell measurements. `neither` means neither sole exceeds the
+threshold; it does not prove flight or rule out another body-ground contact.
+Check support together with steps, slip, tilt, drift and sustained stops: both
+feet loaded does not itself prove balance, and a 50/50 force share is not a gait
+acceptance criterion.
+
+`complete` requires every scheduled sample with the matching command (nonzero
+forward for walking, all-zero for stopping). Incomplete windows retain their
+observed statistics without interpolation. Empty windows have `null` statistics;
+zero total force leaves the share `null`. Missing, malformed, negative or
+nonfinite force samples are counted in `invalid_samples` and leave all that
+window's force/support statistics `null`. No control or qualification changes.
+
+`support_windows` 按两段行走和两段停止分别报告仅左脚、仅右脚、双脚、双脚均未达
+阈值的采样数及比例，左右脚平均法向力，以及左脚在双脚法向力总和中的占比。
+支撑阈值为严格大于0.3 N；平均力和受力占比保留阈值以下的值。统计采用50 Hz
+控制步后等权采样，包含失败时最后不足一控制步的样本，不代表接触时长、冲量或
+实机测力结果。双脚均未达阈值不等于腾空，双脚受力也不等于平衡，应结合步数、
+足滑、倾斜、漂移和持续停稳判断；不把左右各50%作为步态验收标准。
+完整标记要求该时段指令匹配且采样齐全，缺帧时保留已有统计、不补帧。空窗口统计
+为 `null`；总力为零时占比为 `null`。缺失、形状错误、负值或非有限受力样本会
+计入 `invalid_samples`，该窗口受力/支撑统计为 `null`。控制和验收条件保持不变。
+
 ## Resume and retain experiments
 
 ```bash

@@ -16,7 +16,7 @@ METRICS = (
     "sim_seconds", "failure", "policy_sha256", "confirmed_steps_by_foot",
     "alternating_transitions", "walking_slip_m", "stops", "stop_windows",
     "max_tilt_deg", "max_heading_error_deg", "forward_displacement_m",
-    "walking_speed_windows",
+    "walking_speed_windows", "support_windows",
 )
 
 
