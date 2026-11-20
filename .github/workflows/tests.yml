@@ -50,6 +50,7 @@ jobs:
       - run: whalechan-evaluate-suite --help
       - run: whalechan-inspect-policy --help
       - run: whalechan-audit-data --help
+      - run: whalechan-analyze-trajectory --help
       - run: python -m pip install './training[test]'
       - run: python -m pytest -q training/tests --ignore=training/tests/test_data.py --ignore=training/tests/test_training_contract.py
   training-contract:

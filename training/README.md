@@ -224,6 +224,43 @@ window's force/support statistics `null`. No control or qualification changes.
 为 `null`；总力为零时占比为 `null`。缺失、形状错误、负值或非有限受力样本会
 计入 `invalid_samples`，该窗口受力/支撑统计为 `null`。控制和验收条件保持不变。
 
+### Analyze an existing trajectory without rerunning the policy
+
+```bash
+whalechan-analyze-trajectory runs/eval-01/trajectory.json --out runs/analysis-01.json
+# Use the same first-walk schedule as the original immediate-start recording:
+whalechan-analyze-trajectory runs/eval-start-01/trajectory.json --start-immediately --out runs/analysis-start-01.json
+# Module entry for an existing editable installation:
+python -m whalechan_training.analyze_trajectory runs/eval-01/trajectory.json --out runs/analysis-02.json
+```
+
+This CPU tool recomputes `walking_speed_windows`, `stop_windows` and
+`support_windows` from the native evaluator's recorded JSON states. It needs no
+policy bundle, character assets or API and imports no physics/inference runtime.
+Actor observation widths and joint counts do not affect these diagnostics.
+The input uses the evaluator's fixed 50 Hz walk/stop schedule; pass
+`--start-immediately` only when that option was used for the original run.
+It is not a converter for arbitrary robot logs or character `trajectory.npz`.
+
+The report identifies `analysis: offline_recorded_trajectory`, the input file's
+SHA-256, sample count and chosen initial-stand duration. It preserves sample
+order, gaps and partial failures, and does not infer `qualified`, new footfalls
+or a new policy rollout. Keep the original evaluation report for those results.
+Rows need `t`, three-component `command`, root XY in `qpos`, `speed_m_s`,
+`horizontal_speed_m_s`, `angular_speed_rad_s` and left/right `normal_force`.
+Invalid speed/force samples retain the metrics' invalid-count/null behavior;
+malformed core fields fail with a row number. Existing outputs are refused,
+including the input path itself. Exit **0** means analysis was saved, **2** means
+an input/output error; neither is a walking qualification result.
+
+已有轨迹可直接生成速度、停止漂移和左右脚支撑报告，无需再次加载权重或运行仿真。
+工具使用原生评估的JSON与固定50 Hz时序；立即起步场景需显式加
+`--start-immediately`，不适用于任意机器人日志或角色端的NPZ录像。报告保留来源
+文件SHA-256、采样数和所选起步方式，明确标为离线分析；原轨迹、原评估结论和已有
+输出均不覆盖。观测维数及关节数不影响这些统计，但必须提供上述实际测量字段。
+缺帧和提前终止照实保留；异常速度/受力保留无效计数，关键字段错误报告行号。
+退出0仅表示报告生成，退出2表示输入输出错误，不重新宣称步态达标。
+
 ## Resume and retain experiments
 
 ```bash

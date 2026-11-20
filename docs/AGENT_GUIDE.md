@@ -78,6 +78,11 @@ Linux; Torch, CUDA and mjlab are not required. Supply a compatible exported
 bundle; trained weights are not included. See the [CPU setup](../training/README.md#cpu-evaluation-and-inspection).
 `whalechan-train` and `whalechan-export` need the training environment; both
 environments support `whalechan-audit-data` and `whalechan-evaluate`.
+For an existing native `trajectory.json`, use `whalechan-analyze-trajectory`
+to recompute speed, stop-drift and sole-support diagnostics without loading
+weights or running physics. Match `--start-immediately` to the original run and
+choose a fresh JSON output path. This is offline analysis, not a new rollout or
+motion qualification; see [the commands and input fields](../training/README.md#analyze-an-existing-trajectory-without-rerunning-the-policy).
 The 78-input/23-action policy runs at
 50 Hz with a 1 kHz estimated motor model. Keep these artifacts separate from the
 VD24 visual runtime. Inspect `qualified`, per-foot slip, stops and heading in the

@@ -31,6 +31,7 @@ whalechan-evaluate = "whalechan_training.evaluate:main"
 whalechan-evaluate-suite = "whalechan_training.evaluate_suite:main"
 whalechan-inspect-policy = "whalechan_training.inspect_policy:main"
 whalechan-audit-data = "whalechan_training.audit_data:main"
+whalechan-analyze-trajectory = "whalechan_training.analyze_trajectory:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
