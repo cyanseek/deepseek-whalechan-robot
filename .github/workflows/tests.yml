@@ -30,6 +30,7 @@ jobs:
       # The cancelled-response physics scenario also runs locally with the assets installed.
       - run: python -m pytest -q tests/test_persona.py -k "not cancelled_response"
       - run: python -m pytest -q tests/test_behavior_interruptions.py
+      - run: python -m pytest -q tests/test_display_panels.py
   cpu-policy-tools:
     strategy:
       fail-fast: false
