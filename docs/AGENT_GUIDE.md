@@ -4,7 +4,7 @@ Read [project-info.json](../project-info.json) for a compact capability and comm
 
 For the asset-free screen game, open [Star Catcher](https://cyanseek.github.io/deepseek-whalechan-robot/play/) or the standalone `docs/play/index.html`. See [build and test instructions](play/README.md). It runs authored game logic and Canvas graphics, without a model provider, robot connection or learned policy.
 
-For dual RGB565 eye displays, see [partial refresh and the memory-screen example](DISPLAY_PANELS.md). The asset-free Python component supports exact or bounded-error updates and full repaint after interrupted transfers. It is a separate display interface, tested with virtual SPI; it does not connect the character or a learned policy to hardware.
+For dual RGB565 eye displays, see [partial refresh and the memory-screen examples](DISPLAY_PANELS.md). The asset-free Python component supports rectangular frames, quarter-turn panel adapters, optional sparse regions, exact or bounded-error updates and full repaint after interrupted transfers. It is a separate display interface, tested with virtual SPI; it does not connect the character or a learned policy to hardware.
 
 ## Inputs and setup
 

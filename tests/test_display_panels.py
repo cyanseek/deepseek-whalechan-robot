@@ -16,8 +16,8 @@ def channels(pixels):
 
 
 class Screen:
-    def __init__(self):
-        self.memory = np.zeros((240, 240), dtype=np.uint16)
+    def __init__(self, size=(240, 240)):
+        self.memory = np.zeros((size[1], size[0]), dtype=np.uint16)
         self.calls = []
         self.fail_on = None
 
@@ -161,3 +161,86 @@ def test_wrong_pair_count_and_shared_driver_rejected():
     with pytest.raises(ValueError):
         writer.show([blank()[0]])
     assert not any(s.calls for s in screens)
+
+
+@pytest.mark.parametrize("split", [False, True])
+@pytest.mark.parametrize("error", [0, 1])
+def test_rectangular_edge_and_partial_final_band(split, error):
+    size = (37, 19)  # Neither height nor width is a multiple of a band.
+    screens = [Screen(size), Screen(size)]
+    writer = RGB565PanelPair(screens, size=size, split_regions=split, max_channel_error=error)
+    frames = [Image.new("RGB", size) for _ in screens]
+    writer.show(frames)
+    assert writer.payload_bytes == 37 * 19 * 4
+    for value in (4, 8, 12, 32, 255, 128, 0):
+        for xy in ((0, 0), (36, 0), (0, 18), (36, 18), (19, 8)):
+            frames[0].putpixel(xy, (value, value, value))
+        writer.show(frames)
+        assert np.abs(channels(screens[0].memory) - channels(words(frames[0]))).max() <= error
+    assert len(screens[1].calls) == 1
+    assert all(x + w <= 37 and y + h <= 19 for x, y, w, h in screens[0].calls)
+
+
+def test_sparse_regions_skip_quiet_space_between_changes():
+    size = (320, 240)
+    frames = [Image.new("RGB", size) for _ in range(2)]
+    results = []
+    for split in (False, True):
+        screens = [Screen(size), Screen(size)]
+        writer = RGB565PanelPair(screens, size=size, split_regions=split)
+        writer.show(frames)
+        changed = frames[0].copy()
+        changed.putpixel((0, 7), (255, 0, 0))
+        changed.putpixel((319, 7), (0, 0, 255))
+        before = writer.payload_bytes
+        writer.show([changed, frames[1]])
+        results.append(writer.payload_bytes - before)
+        np.testing.assert_array_equal(screens[0].memory, words(changed))
+    assert results == [640, 4]
+
+
+@pytest.mark.parametrize("clockwise", [False, True])
+@pytest.mark.parametrize("error", [0, 1])
+def test_rotated_rectangular_partial_updates_and_failed_write(clockwise, error):
+    from opendafeiyu.display_panels import QuarterTurnPanel
+    size = (37, 19)
+    screens = [Screen((19, 37)), Screen((19, 37))]
+    adapters = [QuarterTurnPanel(screen, clockwise=direction, size=size)
+                for screen, direction in zip(screens, (clockwise, not clockwise))]
+    writer = RGB565PanelPair(adapters, size=size, split_regions=True, max_channel_error=error)
+    pixels = np.arange(37 * 19 * 3, dtype=np.uint16).reshape(19, 37, 3).astype(np.uint8)
+    frames = [Image.fromarray(pixels), Image.fromarray(255 - pixels)]
+    writer.show(frames)
+    for xy in ((0, 0), (36, 18), (0, 18), (36, 0), (21, 8)):
+        frames[1].putpixel(xy, (255, 8, 0))
+    writer.show(frames)
+    for frame, screen, direction in zip(frames, screens, (clockwise, not clockwise)):
+        expected = np.rot90(words(frame), -1 if direction else 1)
+        assert np.abs(channels(screen.memory) - channels(expected)).max() <= error
+    screens[1].fail_on = len(screens[1].calls) + 1
+    frames[1].putpixel((10, 10), (0, 255, 255))
+    with pytest.raises(OSError):
+        writer.show(frames)
+    before = writer.payload_bytes
+    writer.show(frames)
+    assert writer.payload_bytes - before == 37 * 19 * 2
+    assert screens[1].calls[-1] == (0, 0, 19, 37)
+    expected = np.rot90(words(frames[1]), 1 if clockwise else -1)
+    np.testing.assert_array_equal(screens[1].memory, expected)
+
+
+@pytest.mark.parametrize("size", [(0, 240), (320, -1), (True, 240), (320,), None])
+def test_invalid_dimensions_rejected(size):
+    with pytest.raises(ValueError):
+        RGB565PanelPair([Screen(), Screen()], size=size)
+
+
+def test_rotated_tiles_validate_bounds_before_driver_io():
+    from opendafeiyu.display_panels import QuarterTurnPanel
+    screen = Screen((19, 37))
+    adapter = QuarterTurnPanel(screen, clockwise=True, size=(37, 19))
+    tile = Image.new("RGB", (3, 2))
+    for x, y in ((-1, 0), (35, 0), (0, 18)):
+        with pytest.raises(ValueError):
+            adapter.image(tile, x=x, y=y)
+    assert not screen.calls
