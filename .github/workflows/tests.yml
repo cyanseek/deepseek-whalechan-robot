@@ -6,6 +6,17 @@ on:
 permissions:
   contents: read
 jobs:
+  package-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      # Exercise the declared minimum backend, including wheel-from-sdist builds.
+      - run: python -m pip install build wheel setuptools==77.0.3
+      - run: python -m build --no-isolation --outdir dist/runtime .
+      - run: python -m build --no-isolation --outdir dist/training training
   screen-game:
     runs-on: ubuntu-latest
     steps:
