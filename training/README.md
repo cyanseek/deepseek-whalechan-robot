@@ -224,6 +224,34 @@ window's force/support statistics `null`. No control or qualification changes.
 为 `null`；总力为零时占比为 `null`。缺失、形状错误、负值或非有限受力样本会
 计入 `invalid_samples`，该窗口受力/支撑统计为 `null`。控制和验收条件保持不变。
 
+### Inspect posture during walking and stopping
+
+`report.json.posture_windows`, the suite summary and the offline analyzer
+separate the two walking and two stopping periods. Each window reports
+`mean_tilt_deg`, `sampled_max_tilt_deg`, `max_abs_heading_error_deg` and
+`final_heading_error_deg`. Tilt is the angle between body-up and world-up.
+Heading is the signed error relative to the **run's initial forward direction**,
+wrapped to [-180, 180] degrees; it is not reset at window boundaries or unwrapped
+into accumulated turns. No signed heading average is taken across the wrap.
+
+These are recorded 50 Hz post-step samples, including any partial final step.
+The sampled tilt peak can miss between-frame peaks; keep the native evaluator's
+physics-step `max_tilt_deg` for that measurement. `complete` checks the ordered
+sample times and matching commands, not balance. Partial windows retain observed
+statistics without filling gaps. Empty windows have `null` statistics. Missing,
+malformed, nonfinite or out-of-range angles increment `invalid_samples` and
+leave that window's four angle statistics `null`. Other diagnostics remain
+available. Control, training rewards and qualification criteria are unchanged.
+
+`posture_windows` 按两段行走、两段停止分别给出平均倾斜、采样最大倾斜、最大绝对
+偏航误差和最后一帧有符号偏航误差，便于定位行走与停下时的姿态变化。倾斜是机身
+向上方向与世界竖直方向的夹角；偏航始终相对本次运行的初始前向，在[-180,180]度
+内表示，不在每段起点归零，不累计整圈旋转，也不跨角度边界求有符号平均。
+采用50 Hz控制步后采样，含失败时最后不足一控制步的样本；采样峰值可能漏掉帧间
+倾斜峰值，原评估的物理步级 `max_tilt_deg` 仍保留。完整标记只表示时序和指令匹配，
+不代表平衡达标。缺帧保留已有统计，空窗口为 `null`；缺失、形状错误、非有限或越界
+角度计入无效样本数，使该窗口四项角度统计为 `null`，其他诊断仍可用。
+
 ### Analyze an existing trajectory without rerunning the policy
 
 ```bash
@@ -234,8 +262,8 @@ whalechan-analyze-trajectory runs/eval-start-01/trajectory.json --start-immediat
 python -m whalechan_training.analyze_trajectory runs/eval-01/trajectory.json --out runs/analysis-02.json
 ```
 
-This CPU tool recomputes `walking_speed_windows`, `stop_windows` and
-`support_windows` from the native evaluator's recorded JSON states. It needs no
+This CPU tool recomputes `walking_speed_windows`, `stop_windows`,
+`support_windows` and `posture_windows` from the native evaluator's recorded JSON states. It needs no
 policy bundle, character assets or API and imports no physics/inference runtime.
 Actor observation widths and joint counts do not affect these diagnostics.
 The input uses the evaluator's fixed 50 Hz walk/stop schedule; pass
@@ -248,17 +276,21 @@ order, gaps and partial failures, and does not infer `qualified`, new footfalls
 or a new policy rollout. Keep the original evaluation report for those results.
 Rows need `t`, three-component `command`, root XY in `qpos`, `speed_m_s`,
 `horizontal_speed_m_s`, `angular_speed_rad_s` and left/right `normal_force`.
-Invalid speed/force samples retain the metrics' invalid-count/null behavior;
+Posture uses `tilt_rad` in [0, pi] and `heading_error_rad` in [-pi, pi]. Older
+records without these angles still produce the other diagnostics; posture marks
+them as invalid samples. Invalid speed/force/angle samples retain the metrics' invalid-count/null behavior;
 malformed core fields fail with a row number. Existing outputs are refused,
 including the input path itself. Exit **0** means analysis was saved, **2** means
 an input/output error; neither is a walking qualification result.
 
-已有轨迹可直接生成速度、停止漂移和左右脚支撑报告，无需再次加载权重或运行仿真。
+已有轨迹可直接生成速度、停止漂移、左右脚支撑和分段姿态报告，无需再次加载权重或运行仿真。
 工具使用原生评估的JSON与固定50 Hz时序；立即起步场景需显式加
 `--start-immediately`，不适用于任意机器人日志或角色端的NPZ录像。报告保留来源
 文件SHA-256、采样数和所选起步方式，明确标为离线分析；原轨迹、原评估结论和已有
 输出均不覆盖。观测维数及关节数不影响这些统计，但必须提供上述实际测量字段。
-缺帧和提前终止照实保留；异常速度/受力保留无效计数，关键字段错误报告行号。
+姿态读取[0,pi]范围内的 `tilt_rad` 和[-pi,pi]范围内的 `heading_error_rad`；
+旧记录缺少角度时，其他统计仍可生成，姿态标记无效样本。缺帧和提前终止照实保留；
+异常速度/受力/角度保留无效计数，关键字段错误报告行号。
 退出0仅表示报告生成，退出2表示输入输出错误，不重新宣称步态达标。
 
 ## Resume and retain experiments

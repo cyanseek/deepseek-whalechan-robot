@@ -10,6 +10,7 @@ import numpy as np
 from .speed_metrics import walking_speed_windows
 from .stop_metrics import stop_windows
 from .support_metrics import support_windows
+from .posture_metrics import posture_windows
 
 
 def _rows(data):
@@ -30,7 +31,9 @@ def _rows(data):
                                ("t", "horizontal_speed_m_s", "angular_speed_rad_s"))):
                 raise ValueError("time, command, root XY and stop speeds must be finite")
             rows.append({**scalars, "command": command.tolist(), "qpos": position[:2].tolist(),
-                         "normal_force": row.get("normal_force")})
+                         "normal_force": row.get("normal_force"),
+                         "tilt_rad": row.get("tilt_rad"),
+                         "heading_error_rad": row.get("heading_error_rad")})
         except (KeyError, TypeError, ValueError, OverflowError) as error:
             raise ValueError(f"trajectory row {index}: {error}") from error
     return rows
@@ -53,6 +56,7 @@ def analyze_trajectory(path, *, start_immediately=False):
         "stop_windows": stop_windows(rows),
         "walking_speed_windows": walking_speed_windows(rows, start_immediately=start_immediately),
         "support_windows": support_windows(rows, start_immediately=start_immediately),
+        "posture_windows": posture_windows(rows, start_immediately=start_immediately),
     }
 
 

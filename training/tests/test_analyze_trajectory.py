@@ -31,6 +31,9 @@ def test_saved_trajectory_records_provenance_and_keeps_original_bytes(tmp_path):
     assert report["recorded_samples"] == 1 and report["initial_stand_s"] == 2
     assert report["walking_speed_windows"][0]["mae_m_s"] == pytest.approx(.02)
     assert report["support_windows"][0]["left_normal_force_share"] == .8
+    # Older records without angles still produce the other diagnostics.
+    assert report["posture_windows"][0]["invalid_samples"] == 1
+    assert report["posture_windows"][0]["sampled_max_tilt_deg"] is None
     assert "qualified" not in report and "neural_policy" not in report
     assert path.read_bytes() == before
 
@@ -46,6 +49,18 @@ def test_immediate_schedule_and_empty_recording(tmp_path):
     empty = analyze_trajectory(path)
     assert empty["recorded_samples"] == 0
     assert all(not w["complete"] and w["net_drift_m"] is None for w in empty["stop_windows"])
+
+
+def test_posture_fields_survive_offline_loading_and_cli_without_runtime(tmp_path):
+    sample = row(.02)
+    sample.update(tilt_rad=0., heading_error_rad=0.)
+    path = save(tmp_path, [sample]); out = tmp_path / "posture.json"
+    result = invoke(path, out, "--start-immediately")
+    assert result.returncode == 0, result.stderr
+    posture = json.loads(out.read_text())["posture_windows"][0]
+    assert posture["samples"] == 1 and posture["invalid_samples"] == 0
+    assert posture["sampled_max_tilt_deg"] == 0.
+    assert posture["final_heading_error_deg"] == 0.
 
 
 def test_partial_stop_and_invalid_metric_samples_remain_visible(tmp_path):

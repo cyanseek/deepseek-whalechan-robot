@@ -11,12 +11,14 @@ if __package__:
     from .stop_metrics import stop_windows
     from .speed_metrics import walking_speed_windows
     from .support_metrics import support_windows
+    from .posture_metrics import posture_windows
 else:
     from footsteps import FootstepTracker
     from bundle import load_model, verify
     from stop_metrics import stop_windows
     from speed_metrics import walking_speed_windows
     from support_metrics import support_windows
+    from posture_metrics import posture_windows
 
 
 def torque(target, q, qd, kp, kd, caps):
@@ -297,6 +299,7 @@ def main():
         "stop_windows": stop_windows(rows),
         "walking_speed_windows": walking_speed_windows(rows, start_immediately=a.start_immediately),
         "support_windows": support_windows(rows, start_immediately=a.start_immediately),
+        "posture_windows": posture_windows(rows, start_immediately=a.start_immediately),
         "neural_policy": True,
         "qp_calls": 0,
         "eval_resets": 0,

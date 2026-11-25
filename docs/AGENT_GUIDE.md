@@ -81,7 +81,7 @@ bundle; trained weights are not included. See the [CPU setup](../training/README
 `whalechan-train` and `whalechan-export` need the training environment; both
 environments support `whalechan-audit-data` and `whalechan-evaluate`.
 For an existing native `trajectory.json`, use `whalechan-analyze-trajectory`
-to recompute speed, stop-drift and sole-support diagnostics without loading
+to recompute speed, stop-drift, sole-support and per-period posture diagnostics without loading
 weights or running physics. Match `--start-immediately` to the original run and
 choose a fresh JSON output path. This is offline analysis, not a new rollout or
 motion qualification; see [the commands and input fields](../training/README.md#analyze-an-existing-trajectory-without-rerunning-the-policy).
