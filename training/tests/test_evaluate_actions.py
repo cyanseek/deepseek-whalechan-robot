@@ -47,12 +47,7 @@ def test_overflowing_target_leaves_history_unchanged():
     np.testing.assert_array_equal(r.previous, [.4, -.6])
 
 
-@pytest.mark.parametrize("after_one_tick", [False, True])
-@pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
-@pytest.mark.parametrize("failure_kind", ["action", "inference"])
-def test_native_evaluation_retains_policy_failure(tmp_path, monkeypatch, capsys, after_one_tick, directory, failure_kind):
-    # Small native body and a diagnostic ONNX, not a trained walking policy.
-    monkeypatch.chdir(tmp_path)
+def native_bundle(tmp_path):
     bundle = tmp_path / "policy"
     bundle.mkdir()
     xml = '''<mujoco><option timestep=".001"/><worldbody>
@@ -74,6 +69,16 @@ def test_native_evaluation_retains_policy_failure(tmp_path, monkeypatch, capsys,
              kp=[3., 3.], kd=[.1, .1], caps=[.5, .5],
              action_offset=[0., 0.], action_scale=[.1, .1])
     (bundle / "contract.json").write_text(json.dumps(c))
+    return bundle
+
+
+@pytest.mark.parametrize("after_one_tick", [False, True])
+@pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
+@pytest.mark.parametrize("failure_kind", ["action", "inference"])
+def test_native_evaluation_retains_policy_failure(tmp_path, monkeypatch, capsys, after_one_tick, directory, failure_kind):
+    # Small native body and a diagnostic ONNX, not a trained walking policy.
+    monkeypatch.chdir(tmp_path)
+    bundle = native_bundle(tmp_path)
     tensors = [helper.make_tensor("bad", TensorProto.FLOAT, [1, 2], [float("nan"), 0.])]
     if failure_kind == "inference":
         # An input-dependent Gather raises inside real ONNXRuntime, either on
@@ -126,3 +131,66 @@ def test_native_evaluation_retains_policy_failure(tmp_path, monkeypatch, capsys,
     assert len(report["policy_sha256"]) == 64
     assert json.loads(capsys.readouterr().out)["failure"] == report["failure"]
     assert all(np.isfinite(row["action"]).all() for row in rows)
+
+
+@pytest.mark.parametrize("directory", ["policy", "鲸鱼 策略"])
+@pytest.mark.parametrize("kind,after_one_tick", [
+    ("empty_batch", False), ("empty_batch", True), ("scalar", False),
+    ("multi_batch", False), ("extra_output", False),
+])
+def test_native_evaluation_retains_malformed_output(tmp_path, monkeypatch, capsys, directory, kind, after_one_tick):
+    # Actual ONNX output tensors and native physics, with diagnostic graphs only.
+    monkeypatch.chdir(tmp_path)
+    bundle = native_bundle(tmp_path)
+    outputs = [helper.make_tensor_value_info("actions", TensorProto.FLOAT, [None, 2])]
+    if kind == "empty_batch":
+        # Previous action is zero initially, then .5 after a successful tick.
+        # Slice produces either [1, 2] or [0, 2] without raising in ONNXRuntime.
+        tensors = [helper.make_tensor("good", TensorProto.FLOAT, [1, 2], [.5, .5]),
+                   helper.make_tensor("index", TensorProto.INT64, [1], [10]),
+                   helper.make_tensor("threshold", TensorProto.FLOAT, [1], [0. if after_one_tick else -1.]),
+                   helper.make_tensor("shape", TensorProto.INT64, [1], [1]),
+                   helper.make_tensor("one", TensorProto.INT64, [1], [1]),
+                   helper.make_tensor("zero", TensorProto.INT64, [1], [0])]
+        nodes = [helper.make_node("Gather", ["obs", "index"], ["previous"], axis=1),
+                 helper.make_node("Greater", ["previous", "threshold"], ["later"]),
+                 helper.make_node("Cast", ["later"], ["integer"], to=TensorProto.INT64),
+                 helper.make_node("Reshape", ["integer", "shape"], ["flag"]),
+                 helper.make_node("Sub", ["one", "flag"], ["end"]),
+                 helper.make_node("Slice", ["good", "zero", "end", "zero"], ["actions"])]
+    else:
+        shape = [] if kind == "scalar" else ([2, 2] if kind == "multi_batch" else [1, 2])
+        tensors = [helper.make_tensor("constant", TensorProto.FLOAT, shape,
+                                     [.5] * (int(np.prod(shape)) if shape else 1))]
+        nodes = [helper.make_node("Identity", ["constant"], ["actions"])]
+        outputs = [helper.make_tensor_value_info("actions", TensorProto.FLOAT, shape)]
+        if kind == "extra_output":
+            nodes.append(helper.make_node("Identity", ["constant"], ["extra"]))
+            outputs.append(helper.make_tensor_value_info("extra", TensorProto.FLOAT, shape))
+    graph = helper.make_graph(nodes, "output-contract-fixture",
+        [helper.make_tensor_value_info("obs", TensorProto.FLOAT, [1, 15])], outputs, tensors)
+    model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 18)], ir_version=10)
+    onnx.checker.check_model(model)
+    onnx.save(model, bundle / "policy.onnx")
+    seal(bundle)
+    if directory != "policy":
+        bundle = bundle.rename(tmp_path / directory)
+    monkeypatch.setattr(sys, "argv", ["evaluate", str(bundle), "--out", "result", "--seconds", ".1"])
+    with pytest.raises(SystemExit) as result:
+        evaluate.main()
+    assert result.value.code == 2
+    report = json.loads((tmp_path / "result/report.json").read_text())
+    rows = json.loads((tmp_path / "result/trajectory.json").read_text())
+    assert len(rows) == int(after_one_tick)
+    assert report["sim_seconds"] == pytest.approx(.02 if after_one_tick else 0.)
+    assert report["failure"]["stage"] == "policy_output" and not report["qualified"]
+    assert report["failure"]["time_s"] == report["sim_seconds"]
+    assert "(1, 2)" in report["failure"]["reason"]
+    expected = {"empty_batch": [[0, 2]], "scalar": [[]], "multi_batch": [[2, 2]],
+                "extra_output": [[1, 2], [1, 2]]}
+    assert report["failure"]["output_shapes"] == expected[kind]
+    assert (report["max_heading_error_deg"] is None) == (not after_one_tick)
+    assert len(report["policy_sha256"]) == 64
+    assert json.loads(capsys.readouterr().out)["failure"] == report["failure"]
+    if rows:
+        assert rows[0]["action"] == [.5, .5]

@@ -119,13 +119,13 @@ from XML. Keep the bundle's recorded MuJoCo version and file hashes matched.
 工作目录或改用 XML 重建；仍须匹配包内记录的 MuJoCo 版本和文件哈希。
 
 Policy actions must contain one finite value per action joint before clipping.
-NaN/Inf, wrong-sized actions and nonfinite joint targets end evaluation before
+NaN/Inf and nonfinite joint targets end evaluation before
 applying that tick. The report records `failure.stage: policy_action`, its time
 and reason, with `qualified: false`; the partial trajectory and bundle hash are
 retained. Failure on the first tick produces an empty trajectory and a `null`
 heading error. Finite actions still use the recorded transform and ±3 clipping.
 
-策略动作在裁剪前须逐关节对应且数值有限。NaN/Inf、尺寸不符或目标溢出时，评估在
+策略动作在裁剪前须逐关节对应且数值有限。NaN/Inf或目标溢出时，评估在
 执行该步前结束，报告保留失败时间、原因和 `policy_action` 阶段，结果为未达标。
 已有轨迹和策略哈希保留；首步失败时轨迹为空，朝向误差为 `null`。正常有限动作的
 映射与 ±3 裁剪不变。
@@ -141,6 +141,18 @@ ONNX 推理调用报错时，评估保存已完成的轨迹及 `policy_inference
 异常类型、原因和仿真时间，然后退出 **2**。失败步不推进物理，也不沿用旧动作。
 三场套件将其记为执行错误，保留报告并继续其他场景；策略包加载错误仍在开始
 评估循环前报出。
+
+The ONNX call must return exactly one tensor of shape `[1, action_count]`.
+Empty batches, scalars, extra batches/outputs and mismatched dimensions produce
+a `policy_output` failure with the received shapes and exit **2**. Completed
+ticks and the policy hash are saved, including an empty trajectory on first-tick
+failure. The rejected output does not advance physics or action history; the
+suite records an execution error and continues its other cases.
+
+ONNX调用必须返回且只返回一个 `[1, 动作数]` 张量。空批次、标量、多批次、多输出
+或尺寸不符会记录 `policy_output` 失败、实际输出形状并退出 **2**。已有轨迹与策略
+哈希保留，首步失败则保存空轨迹；不推进失败步的物理或动作历史。三场套件将其
+记为执行错误并继续其他场景。
 
 Run all three 20-second cases with a single command:
 

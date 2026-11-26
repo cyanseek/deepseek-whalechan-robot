@@ -209,6 +209,17 @@ def main():
             failure = {"time_s": float(r.d.time), "stage": "policy_inference",
                        "exception_type": type(error).__name__, "reason": str(error)}
             break
+        expected_shape = (1, len(r.offset))
+        if (len(outputs) != 1 or not isinstance(outputs[0], np.ndarray)
+                or outputs[0].shape != expected_shape):
+            # Check the full batch before indexing: empty/scalar outputs must
+            # retain earlier ticks, and extra rows/outputs must not be ignored.
+            shapes = [list(value.shape) if isinstance(value, np.ndarray) else None
+                      for value in outputs]
+            failure = {"time_s": float(r.d.time), "stage": "policy_output",
+                       "reason": f"Expected one policy output with shape {expected_shape}; got {shapes}",
+                       "output_shapes": shapes}
+            break
         action = outputs[0][0]
         try:
             target = r.targets(action)
@@ -337,7 +348,7 @@ def main():
             {k: v for k, v in report.items() if k != "footstep_events"}, indent=2
         )
     )
-    if failure and failure.get("stage") == "policy_inference":
+    if failure and failure.get("stage") in ("policy_inference", "policy_output"):
         raise SystemExit(2)
 
 
