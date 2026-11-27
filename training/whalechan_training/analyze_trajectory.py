@@ -45,9 +45,12 @@ def analyze_trajectory(path, *, start_immediately=False):
     Preserve sample order/gaps. Invalid speed/force samples keep the individual
     metric's invalid_samples/null behavior; no policy qualification is inferred.
     """
-    raw = Path(path).read_bytes()
+    return _analyze(Path(path).read_bytes(), start_immediately=start_immediately)[0]
+
+
+def _analyze(raw, *, start_immediately=False):
     rows = _rows(json.loads(raw.decode("utf-8-sig")))
-    return {
+    report = {
         "schema": "whalechan-trajectory-diagnostics-v1",
         "analysis": "offline_recorded_trajectory",
         "source_sha256": hashlib.sha256(raw).hexdigest(),
@@ -58,24 +61,40 @@ def analyze_trajectory(path, *, start_immediately=False):
         "support_windows": support_windows(rows, start_immediately=start_immediately),
         "posture_windows": posture_windows(rows, start_immediately=start_immediately),
     }
+    return report, rows
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("trajectory", type=Path)
     parser.add_argument("--out", type=Path, required=True, help="new JSON report path")
+    parser.add_argument("--html", type=Path, help="also save a new self-contained HTML chart")
     parser.add_argument("--start-immediately", action="store_true",
                         help="recording used 0-8 s first walk instead of 2-8 s")
     args = parser.parse_args()
     try:
-        report = analyze_trajectory(args.trajectory, start_immediately=args.start_immediately)
+        report, rows = _analyze(args.trajectory.read_bytes(), start_immediately=args.start_immediately)
         text = json.dumps(report, indent=2, allow_nan=False) + "\n"
+        if args.html:
+            from .trajectory_html import trajectory_html
+            if args.html.resolve() == args.out.resolve():
+                raise ValueError("JSON and HTML output paths must differ")
+            html = trajectory_html(report, rows, source_name=args.trajectory.name)
+            for path in (args.out, args.html):
+                if path.exists():
+                    raise FileExistsError(f"Output already exists: {path}")
         args.out.parent.mkdir(parents=True, exist_ok=True)
         with args.out.open("x", encoding="utf-8") as stream:
             stream.write(text)
+        if args.html:
+            args.html.parent.mkdir(parents=True, exist_ok=True)
+            with args.html.open("x", encoding="utf-8") as stream:
+                stream.write(html)
     except (OSError, ValueError) as error:
         parser.exit(2, f"Analysis failed: {error}\n")
     print(f"Analyzed {report['recorded_samples']} recorded samples; saved {args.out}")
+    if args.html:
+        print(f"Saved offline charts: {args.html}")
 
 
 if __name__ == "__main__":

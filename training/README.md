@@ -268,11 +268,26 @@ available. Control, training rewards and qualification criteria are unchanged.
 
 ```bash
 whalechan-analyze-trajectory runs/eval-01/trajectory.json --out runs/analysis-01.json
+# Optional standalone charts; open the HTML directly in a browser:
+whalechan-analyze-trajectory runs/eval-01/trajectory.json --out runs/analysis-visual.json --html runs/analysis-visual.html
 # Use the same first-walk schedule as the original immediate-start recording:
 whalechan-analyze-trajectory runs/eval-start-01/trajectory.json --start-immediately --out runs/analysis-start-01.json
 # Module entry for an existing editable installation:
 python -m whalechan_training.analyze_trajectory runs/eval-01/trajectory.json --out runs/analysis-02.json
 ```
+
+`--html` adds a self-contained report with forward command/measured speed, body
+tilt, initial-heading error and per-period recording coverage. Green bands mark
+the scheduled stops. Curves break at missing/invalid/reordered samples and at
+heading wraps; they do not interpolate missing evidence. The page uses inline
+SVG with no JavaScript, external resources or additional dependencies. HTML and
+JSON use the same parsed input and SHA-256; choose distinct, new output paths.
+The charts are recorded diagnostics, not a new simulation or gait acceptance.
+
+加 `--html` 可直接打开离线图表，查看要求/实测速度、倾斜、偏航和分段采样完整性。
+绿色背景表示预定停止时段；缺帧、无效值、乱序和偏航角度跨界处断线，不补帧。
+页面内嵌SVG，无JavaScript、外部资源或额外依赖。HTML与JSON使用同一次解析的
+轨迹及来源哈希，两个输出须使用不同的新路径；图表不代表新仿真或步态验收。
 
 This CPU tool recomputes `walking_speed_windows`, `stop_windows`,
 `support_windows` and `posture_windows` from the native evaluator's recorded JSON states. It needs no

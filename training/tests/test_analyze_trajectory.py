@@ -131,3 +131,72 @@ def test_cli_bad_input_keeps_source_and_leaves_no_report(tmp_path, content):
     result = invoke(path, out)
     assert result.returncode == 2 and "Analysis failed:" in result.stderr
     assert not out.exists() and path.read_text(encoding="utf-8") == content
+
+
+def test_cli_html_is_standalone_and_preserves_json_metrics(tmp_path):
+    rows = [row(2.02), row(2.04), row(2.06)]
+    for sample in rows:
+        sample.update(tilt_rad=.1, heading_error_rad=-.2)
+    path = save(tmp_path, rows); out = tmp_path / "report.json"
+    html = tmp_path / "图表" / "report.html"
+    result = invoke(path, out, "--html", str(html))
+    assert result.returncode == 0, result.stderr
+    report = json.loads(out.read_text())
+    assert report == analyze_trajectory(path)
+    text = html.read_text(encoding="utf8")
+    assert report["source_sha256"] in text and "3 帧" in text
+    assert text.count('<svg ') == 3 and '<polyline ' in text
+    assert '<script' not in text and 'src=' not in text and 'href=' not in text
+    assert 'not a new rollout or qualification' in text
+
+
+@pytest.mark.parametrize("existing", ["json", "html"])
+def test_html_request_preserves_existing_reports_before_creating_other_output(tmp_path, existing):
+    path = save(tmp_path, [row()])
+    out, html = tmp_path / "report.json", tmp_path / "report.html"
+    saved = out if existing == "json" else html
+    saved.write_text("keep", encoding="utf8")
+    result = invoke(path, out, "--html", str(html))
+    assert result.returncode == 2 and saved.read_text() == "keep"
+    assert not (html if existing == "json" else out).exists()
+
+
+@pytest.mark.parametrize("collision", ["same_output", "html_source", "json_source"])
+def test_html_and_json_paths_cannot_overwrite_each_other_or_input(tmp_path, collision):
+    path = save(tmp_path, [row()]); before = path.read_bytes()
+    out, html = tmp_path / "report.json", tmp_path / "report.html"
+    if collision == "same_output": html = out
+    elif collision == "html_source": html = path
+    else: out = path
+    assert invoke(path, out, "--html", str(html)).returncode == 2
+    assert path.read_bytes() == before
+    assert not (tmp_path / "report.json").exists()
+    assert not (tmp_path / "report.html").exists()
+
+
+def test_plot_source_name_is_escaped(tmp_path):
+    from whalechan_training.analyze_trajectory import _analyze
+    from whalechan_training.trajectory_html import trajectory_html
+    report, rows = _analyze(save(tmp_path, [row()]).read_bytes())
+    text = trajectory_html(report, rows, source_name='<img src=x onerror="bad()">')
+    assert '<img' not in text and '&lt;img' in text and '&quot;bad()&quot;' in text
+
+
+def test_curves_break_at_missing_invalid_reordered_samples_and_heading_wraps():
+    from whalechan_training.trajectory_html import _segments
+    assert _segments([.02, .04, .08, .1, .12, .1, .14], [1, 2, 3, None, 4, 5, 6]) == [
+        [(.02, 1), (.04, 2)], [(.08, 3)], [(.12, 4)], [(.1, 5)], [(.14, 6)]]
+    assert _segments([.02, .04, .06], [179, -179, -178], wrapped=True) == [
+        [(.02, 179)], [(.04, -179), (.06, -178)]]
+
+
+@pytest.mark.parametrize("rows", [[], [row()]])
+def test_empty_and_legacy_records_show_missing_angles_without_fabricated_values(tmp_path, rows):
+    path = save(tmp_path, rows); out = tmp_path / "report.json"; html = tmp_path / "report.html"
+    assert invoke(path, out, "--html", str(html)).returncode == 0
+    text = html.read_text(encoding="utf8")
+    assert 'No valid samples' in text and '不完整 Partial' in text
+    # No invalid SVG coordinates, including empty recordings with no time extent.
+    import re
+    svg = ''.join(re.findall(r'<svg .*?</svg>', text))
+    assert 'nan' not in svg.lower() and 'inf' not in svg.lower()

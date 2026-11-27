@@ -85,6 +85,8 @@ to recompute speed, stop-drift, sole-support and per-period posture diagnostics 
 weights or running physics. Match `--start-immediately` to the original run and
 choose a fresh JSON output path. This is offline analysis, not a new rollout or
 motion qualification; see [the commands and input fields](../training/README.md#analyze-an-existing-trajectory-without-rerunning-the-policy).
+Add `--html runs/analysis.html` for a standalone chart of speed, tilt and heading
+with scheduled stop periods. It opens offline without JavaScript or extra packages.
 The 78-input/23-action policy runs at
 50 Hz with a 1 kHz estimated motor model. Keep these artifacts separate from the
 VD24 visual runtime. Inspect `qualified`, per-foot slip, stops and heading in the
