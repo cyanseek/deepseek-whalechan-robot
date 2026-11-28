@@ -145,7 +145,7 @@ def test_cli_html_is_standalone_and_preserves_json_metrics(tmp_path):
     assert report == analyze_trajectory(path)
     text = html.read_text(encoding="utf8")
     assert report["source_sha256"] in text and "3 帧" in text
-    assert text.count('<svg ') == 3 and '<polyline ' in text
+    assert text.count('<svg ') == 4 and '<polyline ' in text
     assert '<script' not in text and 'src=' not in text and 'href=' not in text
     assert 'not a new rollout or qualification' in text
 
@@ -200,3 +200,49 @@ def test_empty_and_legacy_records_show_missing_angles_without_fabricated_values(
     import re
     svg = ''.join(re.findall(r'<svg .*?</svg>', text))
     assert 'nan' not in svg.lower() and 'inf' not in svg.lower()
+
+
+def support_chart(tmp_path, forces):
+    import re
+    import xml.etree.ElementTree as ET
+    from whalechan_training.analyze_trajectory import _analyze
+    from whalechan_training.trajectory_html import trajectory_html
+    samples = [dict(row(2.02 + i * .02), normal_force=force)
+               for i, force in enumerate(forces)]
+    report, rows = _analyze(save(tmp_path, samples).read_bytes())
+    text = trajectory_html(report, rows, source_name="trajectory.json")
+    charts = [ET.fromstring(svg) for svg in re.findall(r'<svg .*?</svg>', text)]
+    chart = next(svg for svg in charts if 'Sole normal forces' in svg.attrib['aria-label'])
+    return chart, text
+
+
+def test_force_chart_keeps_left_right_order_and_sampled_support_summary(tmp_path):
+    chart, text = support_chart(tmp_path, [[10., 2.], [2., 10.]])
+    curves = chart.findall('polyline')
+    assert len(curves) == 2
+    for curve, values in zip(curves, ([10., 2.], [2., 10.])):
+        points = [tuple(map(float, pair.split(','))) for pair in curve.attrib['points'].split()]
+        for i, ((x, y), value) in enumerate(zip(points, values)):
+            assert x == pytest.approx(66 + (2.02 + i * .02) / 20 * 820, abs=.000501)
+            assert y == pytest.approx(16 + (10.8 - value) / 11.6 * 120, abs=.000501)
+    assert 'Left force share' in text and 'Both loaded' in text
+    assert '<td>50.0%</td>' in text and '<td>100.0%</td>' in text
+    assert '2 · 不完整 Partial' in text
+    assert 'not contact duration, confirmed steps or balance' in text
+
+
+@pytest.mark.parametrize('invalid', [None, [], [1.], [[1.], [2.]],
+                                    [float('nan'), 2.], [1., -2.], [1., float('inf')]])
+def test_invalid_force_pair_breaks_both_curves_without_zero_fill(tmp_path, invalid):
+    chart, text = support_chart(tmp_path, [[10., 2.], invalid, [2., 10.]])
+    assert not chart.findall('polyline')
+    assert len(chart.findall('circle')) == 4
+    # Both series are absent at the invalid sample, even if one side is valid.
+    assert 'Missing/invalid: 2' in text
+    assert '<td>3 · 不完整 Partial</td><td>1</td><td>—</td><td>—</td><td>—</td><td>—</td>' in text
+
+
+def test_zero_force_pairs_remain_valid_but_have_no_force_share(tmp_path):
+    chart, text = support_chart(tmp_path, [[0., 0.], [0., 0.]])
+    assert len(chart.findall('polyline')) == 2
+    assert '<td>2 · 不完整 Partial</td><td>0</td><td>0.000</td><td>0.000</td><td>—</td><td>0.0%</td>' in text

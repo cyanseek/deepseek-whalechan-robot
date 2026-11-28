@@ -84,12 +84,23 @@ def trajectory_html(report, rows, *, source_name):
     heading = [_number(r.get('heading_error_rad'), (-math.pi, math.pi)) for r in rows]
     tilt = [math.degrees(v) if v is not None else None for v in tilt]
     heading = [math.degrees(v) if v is not None else None for v in heading]
+    forces = []
+    for row in rows:
+        pair = row.get('normal_force')
+        pair = ([_number(v, (0., math.inf)) for v in pair]
+                if isinstance(pair, (list, tuple)) and len(pair) == 2 else [None, None])
+        # Treat the pair as one measurement, as support_windows does.
+        forces.append(pair if all(v is not None for v in pair) else [None, None])
     charts = _chart('前向速度 / Forward speed', 'm/s', times,
                     [('指令 Command', '#8395aa', command), ('实测 Measured', '#126eaa', speed)])
     charts += _chart('机身倾斜 / Body tilt', 'deg', times, [('倾斜 Tilt', '#9261b2', tilt)])
     charts += _chart('相对初始方向的偏航 / Initial-heading error', 'deg', times,
                      [('有符号偏航 Signed heading', '#d37b2d', heading)], wrapped=True)
+    charts += _chart('双脚法向力 / Sole normal forces', 'N', times,
+                     [('左脚 Left', '#126eaa', [pair[0] for pair in forces]),
+                      ('右脚 Right', '#d37b2d', [pair[1] for pair in forces])])
     def fmt(value): return '—' if value is None else f'{value:.3f}'
+    def pct(value): return '—' if value is None else f'{value:.1%}'
     table = []
     for w in report['posture_windows']:
         state = '完整 Complete' if w['complete'] else '不完整 Partial'
@@ -98,6 +109,17 @@ def trajectory_html(report, rows, *, source_name):
                      f'<td>{w["samples"]} · {state}</td><td>{w["invalid_samples"]}</td>'
                      f'<td>{fmt(w["sampled_max_tilt_deg"])}</td>'
                      f'<td>{fmt(w["final_heading_error_deg"])}</td></tr>')
+    support = []
+    for w in report['support_windows']:
+        state = '完整 Complete' if w['complete'] else '不完整 Partial'
+        phase = '行走 Walk' if w['phase'] == 'walk' else '停止 Stop'
+        mean = w['mean_normal_force_n'] or [None, None]
+        fractions = w['support_sample_fractions'] or {}
+        support.append(f'<tr><td>{phase} {w["command_s"]:g}–{w["window_end_s"]:g}s</td>'
+                       f'<td>{w["samples"]} · {state}</td><td>{w["invalid_samples"]}</td>'
+                       f'<td>{fmt(mean[0])}</td><td>{fmt(mean[1])}</td>'
+                       f'<td>{pct(w["left_normal_force_share"])}</td>'
+                       f'<td>{pct(fractions.get("both"))}</td></tr>')
     return f'''<!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>轨迹诊断 · Trajectory diagnostics</title>
@@ -119,5 +141,10 @@ th{{font-size:12px;color:#63758b}}@media(max-width:600px){{main{{padding:16px 10
 <thead><tr><th>时段 Period</th><th>采样 Samples</th><th>无效 Invalid</th><th>采样最大倾斜 Peak tilt °</th><th>末帧偏航 Final heading °</th></tr></thead>
 <tbody>{''.join(table)}</tbody></table></div>
 <p class="muted">完整表示采样齐全，不代表平衡达标。50 Hz采样峰值可能漏掉帧间峰值。Complete means recording coverage, not balance; 50 Hz peaks may miss between-frame peaks.</p></section>
+<section><h2>分段足底承重 / Sole loading by period</h2><div class="scroll"><table>
+<thead><tr><th>时段 Period</th><th>采样 Samples</th><th>无效 Invalid</th><th>左平均 Left mean N</th><th>右平均 Right mean N</th><th>左受力占比 Left force share</th><th>双脚承重 Both loaded</th></tr></thead>
+<tbody>{''.join(support)}</tbody></table></div>
+<p class="muted">双脚承重比例为两脚均严格大于0.3 N的采样占比；平均力和左受力占比包含阈值以下的力。Both loaded: fraction of samples with each sole &gt;0.3 N; means and force share include sub-threshold forces.</p>
+<p class="muted">无效力对在两条曲线上同时断开；对应时段的承重统计留空。采样比例不代表接触时长、确认迈步或平衡。Invalid force pairs break both curves and leave period statistics unavailable; sampled loading is not contact duration, confirmed steps or balance.</p></section>
 <p class="muted">Source SHA-256 <code>{escape(report['source_sha256'])}</code></p>
 </main></html>'''
